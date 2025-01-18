@@ -1,0 +1,32 @@
+.terminal-output {
+  background-color: #1E1E1E;
+  color: #00FF00;
+  font-family: 'Courier New', monospace;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 20px auto;
+  max-width: 800px;
+  white-space: pre-wrap;
+}
+
+.terminal-link {
+  color: #00FF00;
+  text-decoration: none;
+}
+
+.terminal-link:hover {
+  text-decoration: underline;
+}
+
+.cursor {
+  display: inline-block;
+  width: 8px;
+  height: 16px;
+  background-color: #00FF00;
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+} 
