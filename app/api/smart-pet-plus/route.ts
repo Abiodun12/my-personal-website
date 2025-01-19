@@ -13,11 +13,13 @@ export async function POST(request: Request) {
     const bytes = await file.arrayBuffer()
     const base64Image = Buffer.from(bytes).toString('base64')
 
-    // Construct absolute URL
-    const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https'
-    const host = request.headers.get('host') || 'localhost:3000'
-    const apiUrl = `${protocol}://${host}/api/analyze`
+    // Get the domain from the request headers or use the Vercel URL
+    const domain = process.env.VERCEL_URL 
+      ? `https://${process.env.VERCEL_URL}`
+      : 'http://localhost:3000'
 
+    // Construct absolute URL
+    const apiUrl = new URL('/api/analyze', domain).toString()
     console.log('Making request to:', apiUrl) // Debug log
 
     const response = await fetch(apiUrl, {
