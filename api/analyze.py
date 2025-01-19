@@ -1,12 +1,12 @@
 from flask import Flask, request, jsonify
 import os
+import json
 import base64
 import io
-import json
-import requests
 from azure.cognitiveservices.vision.computervision import ComputerVisionClient
-from azure.cognitiveservices.vision.computervision.models import VisualFeatureTypes
 from msrest.authentication import CognitiveServicesCredentials
+from azure.cognitiveservices.vision.computervision.models import VisualFeatureTypes
+import requests
 
 app = Flask(__name__)
 
@@ -141,6 +141,6 @@ def analyze():
             'error': str(e)
         }), 500
 
-# Vercel handler
+# Vercel serverless handler
 def handler(event, context):
-    return app(event, context) 
+    return app.wsgi_app(event, context) 
