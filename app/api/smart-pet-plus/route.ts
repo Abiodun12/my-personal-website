@@ -13,10 +13,8 @@ export async function POST(request: Request) {
     const bytes = await file.arrayBuffer()
     const base64Image = Buffer.from(bytes).toString('base64')
 
-    // Get the correct API URL
-    const apiUrl = process.env.VERCEL_URL 
-      ? `https://${process.env.VERCEL_URL}/api/analyze`
-      : 'http://localhost:3000/api/analyze'
+    // Use the absolute URL of your deployment
+    const apiUrl = 'https://24hrsofab.vercel.app/api/analyze'
 
     console.log('Making request to:', apiUrl) // Debug log
 
