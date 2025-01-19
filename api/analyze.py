@@ -80,9 +80,8 @@ def generate_story(subject):
         return f"Sorry, I couldn't generate a story at this time. But I identified a {subject}!"
 
 def handler(event, context):
-<<<<<<< Updated upstream
     try:
-        # Parse the incoming request
+        # Handle CORS preflight
         if event['httpMethod'] == 'OPTIONS':
             return {
                 'statusCode': 200,
@@ -93,120 +92,43 @@ def handler(event, context):
                 },
                 'body': json.dumps({'status': 'ok'})
             }
-        
-        if event['httpMethod'] != 'POST':
-            return {
-                'statusCode': 405,
-                'headers': {
-                    'Access-Control-Allow-Origin': '*',
-                    'Content-Type': 'application/json'
-                },
-                'body': json.dumps({'error': 'Method Not Allowed'})
-            }
-        
-        # Vercel sends multipart form data in `body` as base64
-        import base64
-        from werkzeug.datastructures import FileStorage
-        from werkzeug.formparser import parse_form_data
-        from io import BytesIO
-        
-        content_type = event.get('headers', {}).get('Content-Type') or event.get('headers', {}).get('content-type', '')
-        body = base64.b64decode(event['body'])
-        environ = {
-            'REQUEST_METHOD': 'POST',
-            'CONTENT_TYPE': content_type,
-            'CONTENT_LENGTH': len(body)
-        }
-        fp = BytesIO(body)
-        form, _, _ = parse_form_data(environ, fp, stream_factory=lambda x: BytesIO(x))
-        
-        if 'image' not in form:
-            return {
-                'statusCode': 400,
-                'headers': {
-                    'Access-Control-Allow-Origin': '*',
-                    'Content-Type': 'application/json'
-                },
-                'body': json.dumps({'success': False, 'error': 'No image file found'})
-            }
-        
-        file: FileStorage = form['image']
-        image_data = file.read()
-        
-        # Identify the subject using Azure
-        print("Analyzing image with Azure...")
-        subject = identify_subject(image_data)
-        print(f"Identified subject: {subject}")
-        
-        # Generate story using DeepSeek
-        print("Generating story with DeepSeek...")
-        story = generate_story(subject)
-        print("Story generated successfully")
-        
-        # Encode image for response
-        image_b64 = base64.b64encode(image_data).decode('utf-8')
-        
-=======
-    # Add debugging
-    print("Environment variables check:")
-    print(f"AZURE_ENDPOINT exists: {'AZURE_COMPUTER_VISION_ENDPOINT' in os.environ}")
-    print(f"AZURE_KEY exists: {'AZURE_COMPUTER_VISION_API_KEY' in os.environ}")
-    
-    if event.get('httpMethod') == 'OPTIONS':
-        return {
-            'statusCode': 200,
-            'headers': {
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'POST, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type'
-            },
-            'body': ''
-        }
 
-    try:
-        # Initialize Azure client
-        cv_client = ComputerVisionClient(
-            os.environ['AZURE_COMPUTER_VISION_ENDPOINT'],
-            CognitiveServicesCredentials(os.environ['AZURE_COMPUTER_VISION_API_KEY'])
-        )
-        
-        # Get image data from request
-        body = event.get('body', '')
-        if isinstance(body, str):
-            body = base64.b64decode(body)
-        
-        # Process image with Azure
-        image_stream = io.BytesIO(body)
-        analysis = cv_client.analyze_image_in_stream(
-            image_stream,
-            visual_features=['Description']
-        )
-        
->>>>>>> Stashed changes
-        return {
-            'statusCode': 200,
-            'headers': {
-                'Access-Control-Allow-Origin': '*',
-                'Content-Type': 'application/json'
-            },
-            'body': json.dumps({
-                'success': True,
-<<<<<<< Updated upstream
-                'image': f'data:image/jpeg;base64,{image_b64}',
-                'story': story
-=======
-                'description': analysis.description.captions[0].text
->>>>>>> Stashed changes
-            })
-        }
-        
+        # Process POST request
+        if event['httpMethod'] == 'POST':
+            # Parse multipart form data
+            body = base64.b64decode(event['body'])
+            image_stream = io.BytesIO(body)
+            
+            # Analyze with Azure
+            analysis = cv_client.analyze_image_in_stream(
+                image_stream,
+                visual_features=[VisualFeatureTypes.description]
+            )
+            
+            # Return response
+            return {
+                'statusCode': 200,
+                'headers': {
+                    'Access-Control-Allow-Origin': '*',
+                    'Content-Type': 'application/json'
+                },
+                'body': json.dumps({
+                    'success': True,
+                    'image': f'data:image/jpeg;base64,{base64.b64encode(body).decode("utf-8")}',
+                    'description': analysis.description.captions[0].text
+                })
+            }
+            
     except Exception as e:
-        print(f"Error processing request: {str(e)}")
+        print(f"Error: {str(e)}")
         return {
             'statusCode': 500,
             'headers': {
                 'Access-Control-Allow-Origin': '*',
                 'Content-Type': 'application/json'
             },
-            'body': json.dumps({'success': False, 'error': str(e)})
+            'body': json.dumps({
+                'success': False,
+                'error': str(e)
+            })
         } 
