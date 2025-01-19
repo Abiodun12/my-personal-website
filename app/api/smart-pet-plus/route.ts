@@ -13,9 +13,14 @@ export async function POST(request: Request) {
     const bytes = await file.arrayBuffer()
     const base64Image = Buffer.from(bytes).toString('base64')
 
-    console.log('Making request to Python function...') // Debug log
+    // Get the correct API URL
+    const apiUrl = process.env.VERCEL_URL 
+      ? `https://${process.env.VERCEL_URL}/api/analyze`
+      : 'http://localhost:3000/api/analyze'
 
-    const response = await fetch('/api/analyze', {
+    console.log('Making request to:', apiUrl) // Debug log
+
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
