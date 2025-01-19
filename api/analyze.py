@@ -82,27 +82,21 @@ def generate_story(subject):
 def handler(event, context):
     print("Handler started") # Debug log
     try:
-        # Debug environment variables
-        print("Environment variables check:")
-        print(f"Azure Endpoint exists: {'AZURE_COMPUTER_VISION_ENDPOINT' in os.environ}")
-        print(f"Azure Key exists: {'AZURE_COMPUTER_VISION_API_KEY' in os.environ}")
+        # Validate environment variables
+        azure_key = os.environ.get('AZURE_COMPUTER_VISION_API_KEY')
+        azure_endpoint = os.environ.get('AZURE_COMPUTER_VISION_ENDPOINT')
         
-        # Handle CORS preflight
-        if event.get('httpMethod') == 'OPTIONS':
-            return {
-                'statusCode': 200,
-                'headers': {
-                    'Access-Control-Allow-Origin': '*',
-                    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-                    'Access-Control-Allow-Headers': 'Content-Type'
-                },
-                'body': ''
-            }
+        if not azure_key or not azure_endpoint:
+            raise ValueError(
+                f"Missing environment variables. "
+                f"AZURE_KEY: {'Present' if azure_key else 'Missing'}, "
+                f"AZURE_ENDPOINT: {'Present' if azure_endpoint else 'Missing'}"
+            )
 
         # Initialize Azure client
         client = ComputerVisionClient(
-            os.environ['AZURE_COMPUTER_VISION_ENDPOINT'],
-            CognitiveServicesCredentials(os.environ['AZURE_COMPUTER_VISION_API_KEY'])
+            endpoint=azure_endpoint,
+            credentials=CognitiveServicesCredentials(azure_key)
         )
         
         # Parse request body
@@ -124,6 +118,9 @@ def handler(event, context):
         )
         
         print("Analysis complete") # Debug log
+        if not analysis.description.captions:
+            raise ValueError('No description generated for the image')
+
         return {
             'statusCode': 200,
             'headers': {
@@ -132,7 +129,7 @@ def handler(event, context):
             },
             'body': json.dumps({
                 'success': True,
-                'description': analysis.description.captions[0].text if analysis.description.captions else 'No description available'
+                'description': analysis.description.captions[0].text
             })
         }
             
