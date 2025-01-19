@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "api/analyze.py", "use": "@vercel/python" },
+    { "src": "package.json", "use": "@vercel/next" }
+  ],
+  "routes": [
+    { "src": "/api/analyze", "dest": "api/analyze.py" },
+    { "src": "/(.*)", "dest": "/" }
+  ],
+  "env": {
+    "AZURE_COMPUTER_VISION_API_KEY": "@azure_computer_vision_api_key",
+    "AZURE_COMPUTER_VISION_ENDPOINT": "@azure_computer_vision_endpoint",
+    "DEEPSEEK_API_KEY": "@deepseek_api_key"
+  }
+} 
