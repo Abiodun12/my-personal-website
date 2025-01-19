@@ -1,23 +1,15 @@
 {
   "version": 2,
-  "builds": [
-    { 
-      "src": "api/analyze.py",
-      "use": "@vercel/python"
-    },
-    {
-      "src": "next.config.js",
-      "use": "@vercel/next"
+  "functions": {
+    "api/analyze.py": {
+      "runtime": "python3.9"
     }
-  ],
+  },
   "routes": [
     {
       "src": "/api/analyze",
+      "methods": ["POST", "OPTIONS"],
       "dest": "/api/analyze.py"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
     }
   ]
 } 

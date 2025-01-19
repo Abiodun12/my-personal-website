@@ -48,10 +48,6 @@ export async function POST(request: Request) {
       throw new Error(`Invalid JSON response: ${responseText}`)
     }
 
-    if (!data.success) {
-      throw new Error(data.error || 'Unknown error occurred')
-    }
-
     return NextResponse.json(data)
   } catch (error) {
     console.error('Detailed error:', error)

@@ -1,3 +1,4 @@
+from flask import Flask, request, jsonify
 import os
 import base64
 import io
@@ -6,6 +7,8 @@ import requests
 from azure.cognitiveservices.vision.computervision import ComputerVisionClient
 from azure.cognitiveservices.vision.computervision.models import VisualFeatureTypes
 from msrest.authentication import CognitiveServicesCredentials
+
+app = Flask(__name__)
 
 # Load environment variables
 AZURE_API_KEY = os.getenv('AZURE_COMPUTER_VISION_API_KEY')
@@ -79,8 +82,8 @@ def generate_story(subject):
         print(f"Error generating story: {e}")
         return f"Sorry, I couldn't generate a story at this time. But I identified a {subject}!"
 
-def handler(event, context):
-    print("Handler started") # Debug log
+@app.route('/api/analyze', methods=['POST'])
+def analyze():
     try:
         # Validate environment variables
         azure_key = os.environ.get('AZURE_COMPUTER_VISION_API_KEY')
@@ -90,20 +93,12 @@ def handler(event, context):
         print(f"Azure Endpoint present: {bool(azure_endpoint)}")
         
         if not azure_key or not azure_endpoint:
-            raise ValueError("Missing required Azure credentials")
+            return jsonify({'success': False, 'error': 'Missing Azure credentials'}), 500
 
-        # Parse request body
-        print("Parsing request body")
-        if not event.get('body'):
-            raise ValueError("No request body provided")
-            
-        try:
-            body = json.loads(event['body'])
-        except json.JSONDecodeError as e:
-            raise ValueError(f"Invalid JSON body: {str(e)}")
-
-        if 'image' not in body:
-            raise ValueError("No image data in request body")
+        # Get request data
+        data = request.get_json()
+        if not data or 'image' not in data:
+            return jsonify({'success': False, 'error': 'No image data provided'}), 400
 
         # Initialize Azure client
         print("Initializing Azure client")
@@ -115,9 +110,9 @@ def handler(event, context):
         # Process image
         print("Decoding image")
         try:
-            image_data = base64.b64decode(body['image'])
+            image_data = base64.b64decode(data['image'])
         except Exception as e:
-            raise ValueError(f"Invalid base64 image data: {str(e)}")
+            return jsonify({'success': False, 'error': f'Invalid base64 image data: {str(e)}'}), 400
             
         image_stream = io.BytesIO(image_data)
         
@@ -129,34 +124,23 @@ def handler(event, context):
         )
         
         if not analysis.description or not analysis.description.captions:
-            raise ValueError("No description generated for the image")
+            return jsonify({'success': False, 'error': 'No description generated for the image'}), 500
 
         description = analysis.description.captions[0].text
         print(f"Analysis complete. Description: {description}")
 
-        return {
-            'statusCode': 200,
-            'headers': {
-                'Access-Control-Allow-Origin': '*',
-                'Content-Type': 'application/json'
-            },
-            'body': json.dumps({
-                'success': True,
-                'description': description
-            })
-        }
+        return jsonify({
+            'success': True,
+            'description': description
+        })
             
     except Exception as e:
-        error_message = str(e)
-        print(f"Error in handler: {error_message}")
-        return {
-            'statusCode': 500,
-            'headers': {
-                'Access-Control-Allow-Origin': '*',
-                'Content-Type': 'application/json'
-            },
-            'body': json.dumps({
-                'success': False,
-                'error': error_message
-            })
-        } 
+        print(f"Error in analyze: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+# Vercel handler
+def handler(event, context):
+    return app(event, context) 
