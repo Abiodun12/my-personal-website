@@ -9,23 +9,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 })
     }
 
-    const pythonFormData = new FormData()
-    pythonFormData.append('image', file)
+    // Convert file to base64
+    const bytes = await file.arrayBuffer()
+    const base64Image = Buffer.from(bytes).toString('base64')
 
-    const apiUrl = process.env.VERCEL_URL 
-      ? `https://${process.env.VERCEL_URL}/api/analyze`
-      : '/api/analyze'
-
-    console.log('Calling API URL:', apiUrl)
-
-    const response = await fetch(apiUrl, {
+    // Call the Python serverless function
+    const response = await fetch('/api/analyze', {
       method: 'POST',
-      body: pythonFormData,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ image: base64Image }),
     })
 
     if (!response.ok) {
-      const errorText = await response.text()
-      console.error('API Error:', errorText)
       throw new Error(`HTTP error! status: ${response.status}`)
     }
 

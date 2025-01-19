@@ -2,34 +2,14 @@
   "version": 2,
   "builds": [
     { 
-      "src": "api/analyze.py", 
-      "use": "@vercel/python",
-      "config": { "maxLambdaSize": "15mb" }
-    },
-    { 
-      "src": "package.json", 
-      "use": "@vercel/next" 
+      "src": "api/analyze.py",
+      "use": "@vercel/python"
     }
   ],
   "routes": [
     {
       "src": "/api/analyze",
-      "methods": ["POST", "OPTIONS"],
-      "dest": "/api/analyze.py",
-      "headers": {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type"
-      }
-    },
-    { 
-      "src": "/(.*)", 
-      "dest": "/" 
+      "dest": "api/analyze.py"
     }
-  ],
-  "env": {
-    "AZURE_COMPUTER_VISION_API_KEY": "@azure_computer_vision_api_key",
-    "AZURE_COMPUTER_VISION_ENDPOINT": "@azure_computer_vision_endpoint",
-    "DEEPSEEK_API_KEY": "@deepseek_api_key"
-  }
+  ]
 } 
