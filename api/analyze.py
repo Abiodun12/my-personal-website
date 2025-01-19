@@ -6,6 +6,8 @@ import requests
 from azure.cognitiveservices.vision.computervision import ComputerVisionClient
 from azure.cognitiveservices.vision.computervision.models import VisualFeatureTypes
 from msrest.authentication import CognitiveServicesCredentials
+from http.server import BaseHTTPRequestHandler
+from urllib.parse import parse_qs
 
 # Load environment variables
 AZURE_API_KEY = os.getenv('AZURE_COMPUTER_VISION_API_KEY')
@@ -48,103 +50,92 @@ def identify_subject(image_data):
     return "animal"
 
 def generate_story(subject):
-    prompt = f"Tell me a heartwarming story about {subject}."
-    
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {DEEPSEEK_API_KEY}"
-    }
-    
-    data = {
-        "model": "deepseek-chat",
-        "messages": [
-            {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": prompt}
-        ],
-        "temperature": 0.7,
-        "max_tokens": 150,
-        "stream": False
-    }
-    
     try:
+        url = "https://api.deepseek.com/v1/chat/completions"
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {DEEPSEEK_API_KEY}"
+        }
+        
+        prompt = f"Write a short, heartwarming story about {subject}. Keep it under 100 words."
+        
         response = requests.post(
-            "https://api.deepseek.com/v1/chat/completions",
+            url,
             headers=headers,
-            json=data
+            json={
+                "model": "deepseek-chat",
+                "messages": [{"role": "user", "content": prompt}],
+                "temperature": 0.7,
+                "max_tokens": 150
+            }
         )
+        
         response.raise_for_status()
-        response_data = response.json()
-        return response_data['choices'][0]['message']['content'].strip()
+        return response.json()["choices"][0]["message"]["content"]
     except Exception as e:
         print(f"Error generating story: {e}")
         return f"Sorry, I couldn't generate a story at this time. But I identified a {subject}!"
 
 def handler(event, context):
-    try:
-        # Parse the incoming request
-        if event['httpMethod'] == 'OPTIONS':
-            return {
-                'statusCode': 200,
-                'headers': {
-                    'Access-Control-Allow-Origin': '*',
-                    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-                    'Access-Control-Allow-Headers': 'Content-Type'
-                },
-                'body': json.dumps({'status': 'ok'})
-            }
-        
-        if event['httpMethod'] != 'POST':
-            return {
-                'statusCode': 405,
-                'headers': {
-                    'Access-Control-Allow-Origin': '*',
-                    'Content-Type': 'application/json'
-                },
-                'body': json.dumps({'error': 'Method Not Allowed'})
-            }
-        
-        # Vercel sends multipart form data in `body` as base64
-        import base64
-        from werkzeug.datastructures import FileStorage
-        from werkzeug.formparser import parse_form_data
-        from io import BytesIO
-        
-        content_type = event.get('headers', {}).get('Content-Type') or event.get('headers', {}).get('content-type', '')
-        body = base64.b64decode(event['body'])
-        environ = {
-            'REQUEST_METHOD': 'POST',
-            'CONTENT_TYPE': content_type,
-            'CONTENT_LENGTH': len(body)
+    # Handle CORS preflight request
+    if event.get('httpMethod') == 'OPTIONS':
+        return {
+            'statusCode': 200,
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'POST, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type',
+                'Access-Control-Max-Age': '86400'
+            },
+            'body': ''
         }
-        fp = BytesIO(body)
-        form, _, _ = parse_form_data(environ, fp, stream_factory=lambda x: BytesIO(x))
+
+    try:
+        # Get the request body
+        body = event.get('body', '')
+        if isinstance(body, str):
+            body = base64.b64decode(body)
+
+        # Parse multipart form data
+        content_type = event.get('headers', {}).get('content-type', '')
+        if 'multipart/form-data' not in content_type:
+            raise ValueError('Invalid content type')
+
+        # Extract boundary
+        boundary = content_type.split('boundary=')[1]
         
-        if 'image' not in form:
-            return {
-                'statusCode': 400,
-                'headers': {
-                    'Access-Control-Allow-Origin': '*',
-                    'Content-Type': 'application/json'
-                },
-                'body': json.dumps({'success': False, 'error': 'No image file found'})
-            }
+        # Parse multipart form data
+        parts = body.split(f'--{boundary}'.encode())
+        image_data = None
         
-        file: FileStorage = form['image']
-        image_data = file.read()
+        for part in parts:
+            if b'Content-Disposition: form-data; name="image"' in part:
+                # Extract image data
+                image_start = part.find(b'\r\n\r\n') + 4
+                image_data = part[image_start:].strip()
+                break
+
+        if not image_data:
+            raise ValueError('No image data found')
+
+        # Initialize Azure client
+        cv_client = ComputerVisionClient(
+            AZURE_ENDPOINT,
+            CognitiveServicesCredentials(AZURE_API_KEY)
+        )
+
+        # Analyze image
+        image_stream = io.BytesIO(image_data)
+        analysis = cv_client.analyze_image_in_stream(
+            image_stream,
+            visual_features=[VisualFeatureTypes.description]
+        )
         
-        # Identify the subject using Azure
-        print("Analyzing image with Azure...")
-        subject = identify_subject(image_data)
-        print(f"Identified subject: {subject}")
-        
+        subject = analysis.description.captions[0].text
+
         # Generate story using DeepSeek
-        print("Generating story with DeepSeek...")
         story = generate_story(subject)
-        print("Story generated successfully")
-        
-        # Encode image for response
-        image_b64 = base64.b64encode(image_data).decode('utf-8')
-        
+
         return {
             'statusCode': 200,
             'headers': {
@@ -153,18 +144,21 @@ def handler(event, context):
             },
             'body': json.dumps({
                 'success': True,
-                'image': f'data:image/jpeg;base64,{image_b64}',
+                'subject': subject,
                 'story': story
             })
         }
-        
+
     except Exception as e:
-        print(f"Error processing request: {str(e)}")
+        print(f"Error: {str(e)}")
         return {
             'statusCode': 500,
             'headers': {
                 'Access-Control-Allow-Origin': '*',
                 'Content-Type': 'application/json'
             },
-            'body': json.dumps({'success': False, 'error': str(e)})
+            'body': json.dumps({
+                'success': False,
+                'error': str(e)
+            })
         } 

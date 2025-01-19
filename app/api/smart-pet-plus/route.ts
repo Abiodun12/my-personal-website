@@ -12,7 +12,12 @@ export async function POST(request: Request) {
     const pythonFormData = new FormData()
     pythonFormData.append('image', file, file.name)
 
-    const response = await fetch('/api/analyze', {
+    // Update the API endpoint to use the full URL in production
+    const apiUrl = process.env.VERCEL_URL 
+      ? `https://${process.env.VERCEL_URL}/api/analyze`
+      : 'http://localhost:3000/api/analyze'
+
+    const response = await fetch(apiUrl, {
       method: 'POST',
       body: pythonFormData,
     })
