@@ -20,7 +20,7 @@ export async function POST(request: Request) {
 
     // Construct absolute URL
     const apiUrl = new URL('/api/analyze', domain).toString()
-    console.log('Making request to:', apiUrl) // Debug log
+    console.log('Making request to:', apiUrl)
 
     const response = await fetch(apiUrl, {
       method: 'POST',
@@ -33,13 +33,25 @@ export async function POST(request: Request) {
       }),
     })
 
+    const responseText = await response.text()
+    console.log('API Response:', response.status, responseText)
+
     if (!response.ok) {
-      const errorText = await response.text()
-      console.error('API Error:', errorText)
-      throw new Error(errorText || 'Failed to process image')
+      throw new Error(`API returned ${response.status}: ${responseText}`)
     }
 
-    const data = await response.json()
+    // Try to parse the response as JSON
+    let data
+    try {
+      data = JSON.parse(responseText)
+    } catch (e) {
+      throw new Error(`Invalid JSON response: ${responseText}`)
+    }
+
+    if (!data.success) {
+      throw new Error(data.error || 'Unknown error occurred')
+    }
+
     return NextResponse.json(data)
   } catch (error) {
     console.error('Detailed error:', error)

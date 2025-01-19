@@ -86,40 +86,53 @@ def handler(event, context):
         azure_key = os.environ.get('AZURE_COMPUTER_VISION_API_KEY')
         azure_endpoint = os.environ.get('AZURE_COMPUTER_VISION_ENDPOINT')
         
+        print(f"Azure Key present: {bool(azure_key)}")
+        print(f"Azure Endpoint present: {bool(azure_endpoint)}")
+        
         if not azure_key or not azure_endpoint:
-            raise ValueError(
-                f"Missing environment variables. "
-                f"AZURE_KEY: {'Present' if azure_key else 'Missing'}, "
-                f"AZURE_ENDPOINT: {'Present' if azure_endpoint else 'Missing'}"
-            )
+            raise ValueError("Missing required Azure credentials")
+
+        # Parse request body
+        print("Parsing request body")
+        if not event.get('body'):
+            raise ValueError("No request body provided")
+            
+        try:
+            body = json.loads(event['body'])
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Invalid JSON body: {str(e)}")
+
+        if 'image' not in body:
+            raise ValueError("No image data in request body")
 
         # Initialize Azure client
+        print("Initializing Azure client")
         client = ComputerVisionClient(
             endpoint=azure_endpoint,
             credentials=CognitiveServicesCredentials(azure_key)
         )
         
-        # Parse request body
-        print("Parsing request body") # Debug log
-        body = json.loads(event.get('body', '{}'))
-        if 'image' not in body:
-            raise ValueError('No image data provided')
-
         # Process image
-        print("Processing image") # Debug log
-        image_data = base64.b64decode(body['image'])
+        print("Decoding image")
+        try:
+            image_data = base64.b64decode(body['image'])
+        except Exception as e:
+            raise ValueError(f"Invalid base64 image data: {str(e)}")
+            
         image_stream = io.BytesIO(image_data)
         
         # Analyze with Azure
-        print("Calling Azure API") # Debug log
+        print("Calling Azure API")
         analysis = client.analyze_image_in_stream(
             image_stream,
-            visual_features=['Description']
+            visual_features=[VisualFeatureTypes.description]
         )
         
-        print("Analysis complete") # Debug log
-        if not analysis.description.captions:
-            raise ValueError('No description generated for the image')
+        if not analysis.description or not analysis.description.captions:
+            raise ValueError("No description generated for the image")
+
+        description = analysis.description.captions[0].text
+        print(f"Analysis complete. Description: {description}")
 
         return {
             'statusCode': 200,
@@ -129,12 +142,13 @@ def handler(event, context):
             },
             'body': json.dumps({
                 'success': True,
-                'description': analysis.description.captions[0].text
+                'description': description
             })
         }
             
     except Exception as e:
-        print(f"Error in handler: {str(e)}") # Debug log
+        error_message = str(e)
+        print(f"Error in handler: {error_message}")
         return {
             'statusCode': 500,
             'headers': {
@@ -143,6 +157,6 @@ def handler(event, context):
             },
             'body': json.dumps({
                 'success': False,
-                'error': str(e)
+                'error': error_message
             })
         } 
