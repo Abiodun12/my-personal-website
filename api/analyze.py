@@ -80,13 +80,13 @@ def generate_story(subject):
         return f"Sorry, I couldn't generate a story at this time. But I identified a {subject}!"
 
 def handler(event, context):
-    print("Checking environment variables...")
-    print(f"Azure Endpoint exists: {'AZURE_COMPUTER_VISION_ENDPOINT' in os.environ}")
-    print(f"Azure Key exists: {'AZURE_COMPUTER_VISION_API_KEY' in os.environ}")
-    print(f"DeepSeek Key exists: {'DEEPSEEK_API_KEY' in os.environ}")
-    
     print("Handler started") # Debug log
     try:
+        # Debug environment variables
+        print("Environment variables check:")
+        print(f"Azure Endpoint exists: {'AZURE_COMPUTER_VISION_ENDPOINT' in os.environ}")
+        print(f"Azure Key exists: {'AZURE_COMPUTER_VISION_API_KEY' in os.environ}")
+        
         # Handle CORS preflight
         if event.get('httpMethod') == 'OPTIONS':
             return {
@@ -96,28 +96,34 @@ def handler(event, context):
                     'Access-Control-Allow-Methods': 'POST, OPTIONS',
                     'Access-Control-Allow-Headers': 'Content-Type'
                 },
-                'body': json.dumps({'status': 'ok'})
+                'body': ''
             }
 
-        print("Processing POST request") # Debug log
+        # Initialize Azure client
+        client = ComputerVisionClient(
+            os.environ['AZURE_COMPUTER_VISION_ENDPOINT'],
+            CognitiveServicesCredentials(os.environ['AZURE_COMPUTER_VISION_API_KEY'])
+        )
         
         # Parse request body
+        print("Parsing request body") # Debug log
         body = json.loads(event.get('body', '{}'))
         if 'image' not in body:
             raise ValueError('No image data provided')
 
-        # Decode base64 image
+        # Process image
+        print("Processing image") # Debug log
         image_data = base64.b64decode(body['image'])
-        
-        # Process with Azure
         image_stream = io.BytesIO(image_data)
-        analysis = cv_client.analyze_image_in_stream(
+        
+        # Analyze with Azure
+        print("Calling Azure API") # Debug log
+        analysis = client.analyze_image_in_stream(
             image_stream,
-            visual_features=[VisualFeatureTypes.description]
+            visual_features=['Description']
         )
         
-        print("Image analyzed successfully") # Debug log
-        
+        print("Analysis complete") # Debug log
         return {
             'statusCode': 200,
             'headers': {
@@ -126,7 +132,7 @@ def handler(event, context):
             },
             'body': json.dumps({
                 'success': True,
-                'description': analysis.description.captions[0].text
+                'description': analysis.description.captions[0].text if analysis.description.captions else 'No description available'
             })
         }
             
