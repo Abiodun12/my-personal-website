@@ -80,6 +80,11 @@ def generate_story(subject):
         return f"Sorry, I couldn't generate a story at this time. But I identified a {subject}!"
 
 def handler(event, context):
+    print("Checking environment variables...")
+    print(f"Azure Endpoint exists: {'AZURE_COMPUTER_VISION_ENDPOINT' in os.environ}")
+    print(f"Azure Key exists: {'AZURE_COMPUTER_VISION_API_KEY' in os.environ}")
+    print(f"DeepSeek Key exists: {'DEEPSEEK_API_KEY' in os.environ}")
+    
     print("Handler started") # Debug log
     try:
         # Handle CORS preflight
