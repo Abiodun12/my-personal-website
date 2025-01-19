@@ -13,25 +13,31 @@ export async function POST(request: Request) {
     const bytes = await file.arrayBuffer()
     const base64Image = Buffer.from(bytes).toString('base64')
 
-    // Call the Python serverless function
+    console.log('Making request to Python function...') // Debug log
+
     const response = await fetch('/api/analyze', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ image: base64Image }),
+      body: JSON.stringify({ 
+        image: base64Image,
+        filename: file.name 
+      }),
     })
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
+      const errorText = await response.text()
+      console.error('Python API Error:', errorText)
+      throw new Error(`API error: ${errorText}`)
     }
 
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Error:', error)
+    console.error('Detailed error:', error)
     return NextResponse.json(
-      { error: 'Error processing request' }, 
+      { error: error instanceof Error ? error.message : 'Error processing request' }, 
       { status: 500 }
     )
   }

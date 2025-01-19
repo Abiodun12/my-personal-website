@@ -80,9 +80,10 @@ def generate_story(subject):
         return f"Sorry, I couldn't generate a story at this time. But I identified a {subject}!"
 
 def handler(event, context):
+    print("Handler started") # Debug log
     try:
         # Handle CORS preflight
-        if event['httpMethod'] == 'OPTIONS':
+        if event.get('httpMethod') == 'OPTIONS':
             return {
                 'statusCode': 200,
                 'headers': {
@@ -93,34 +94,39 @@ def handler(event, context):
                 'body': json.dumps({'status': 'ok'})
             }
 
-        # Process POST request
-        if event['httpMethod'] == 'POST':
-            # Parse multipart form data
-            body = base64.b64decode(event['body'])
-            image_stream = io.BytesIO(body)
-            
-            # Analyze with Azure
-            analysis = cv_client.analyze_image_in_stream(
-                image_stream,
-                visual_features=[VisualFeatureTypes.description]
-            )
-            
-            # Return response
-            return {
-                'statusCode': 200,
-                'headers': {
-                    'Access-Control-Allow-Origin': '*',
-                    'Content-Type': 'application/json'
-                },
-                'body': json.dumps({
-                    'success': True,
-                    'image': f'data:image/jpeg;base64,{base64.b64encode(body).decode("utf-8")}',
-                    'description': analysis.description.captions[0].text
-                })
-            }
+        print("Processing POST request") # Debug log
+        
+        # Parse request body
+        body = json.loads(event.get('body', '{}'))
+        if 'image' not in body:
+            raise ValueError('No image data provided')
+
+        # Decode base64 image
+        image_data = base64.b64decode(body['image'])
+        
+        # Process with Azure
+        image_stream = io.BytesIO(image_data)
+        analysis = cv_client.analyze_image_in_stream(
+            image_stream,
+            visual_features=[VisualFeatureTypes.description]
+        )
+        
+        print("Image analyzed successfully") # Debug log
+        
+        return {
+            'statusCode': 200,
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Content-Type': 'application/json'
+            },
+            'body': json.dumps({
+                'success': True,
+                'description': analysis.description.captions[0].text
+            })
+        }
             
     except Exception as e:
-        print(f"Error: {str(e)}")
+        print(f"Error in handler: {str(e)}") # Debug log
         return {
             'statusCode': 500,
             'headers': {
