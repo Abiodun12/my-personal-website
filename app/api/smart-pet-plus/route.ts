@@ -9,15 +9,26 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 })
     }
 
-    const pythonFormData = new FormData()
-    pythonFormData.append('image', file, file.name)
+    // Convert file to base64
+    const bytes = await file.arrayBuffer()
+    const buffer = Buffer.from(bytes)
+    const base64Image = buffer.toString('base64')
 
+<<<<<<< Updated upstream
+=======
+    // Call the Python serverless function
+>>>>>>> Stashed changes
     const response = await fetch('/api/analyze', {
       method: 'POST',
-      body: pythonFormData,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ image: base64Image }),
     })
 
     if (!response.ok) {
+      const errorText = await response.text()
+      console.error('API Error:', errorText)
       throw new Error(`HTTP error! status: ${response.status}`)
     }
 

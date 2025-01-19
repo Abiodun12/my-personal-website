@@ -5,8 +5,20 @@
     { "src": "package.json", "use": "@vercel/next" }
   ],
   "routes": [
+<<<<<<< Updated upstream
     { "src": "/api/analyze", "dest": "api/analyze.py" },
     { "src": "/(.*)", "dest": "/" }
+=======
+    {
+      "src": "/api/analyze",
+      "methods": ["POST", "OPTIONS"],
+      "dest": "/api/analyze.py"
+    },
+    { 
+      "src": "/(.*)", 
+      "dest": "/" 
+    }
+>>>>>>> Stashed changes
   ],
   "env": {
     "AZURE_COMPUTER_VISION_API_KEY": "@azure_computer_vision_api_key",

@@ -80,6 +80,7 @@ def generate_story(subject):
         return f"Sorry, I couldn't generate a story at this time. But I identified a {subject}!"
 
 def handler(event, context):
+<<<<<<< Updated upstream
     try:
         # Parse the incoming request
         if event['httpMethod'] == 'OPTIONS':
@@ -145,6 +146,43 @@ def handler(event, context):
         # Encode image for response
         image_b64 = base64.b64encode(image_data).decode('utf-8')
         
+=======
+    # Add debugging
+    print("Environment variables check:")
+    print(f"AZURE_ENDPOINT exists: {'AZURE_COMPUTER_VISION_ENDPOINT' in os.environ}")
+    print(f"AZURE_KEY exists: {'AZURE_COMPUTER_VISION_API_KEY' in os.environ}")
+    
+    if event.get('httpMethod') == 'OPTIONS':
+        return {
+            'statusCode': 200,
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'POST, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type'
+            },
+            'body': ''
+        }
+
+    try:
+        # Initialize Azure client
+        cv_client = ComputerVisionClient(
+            os.environ['AZURE_COMPUTER_VISION_ENDPOINT'],
+            CognitiveServicesCredentials(os.environ['AZURE_COMPUTER_VISION_API_KEY'])
+        )
+        
+        # Get image data from request
+        body = event.get('body', '')
+        if isinstance(body, str):
+            body = base64.b64decode(body)
+        
+        # Process image with Azure
+        image_stream = io.BytesIO(body)
+        analysis = cv_client.analyze_image_in_stream(
+            image_stream,
+            visual_features=['Description']
+        )
+        
+>>>>>>> Stashed changes
         return {
             'statusCode': 200,
             'headers': {
@@ -153,8 +191,12 @@ def handler(event, context):
             },
             'body': json.dumps({
                 'success': True,
+<<<<<<< Updated upstream
                 'image': f'data:image/jpeg;base64,{image_b64}',
                 'story': story
+=======
+                'description': analysis.description.captions[0].text
+>>>>>>> Stashed changes
             })
         }
         
