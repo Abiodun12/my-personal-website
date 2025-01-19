@@ -2,14 +2,14 @@
   "version": 2,
   "functions": {
     "api/analyze.py": {
-      "runtime": "python3.11"
+      "runtime": "@vercel/python@4.0.0"
     }
   },
   "routes": [
     {
       "src": "/api/analyze",
       "methods": ["POST", "OPTIONS"],
-      "dest": "/api/analyze.py"
+      "dest": "api/analyze.py"
     }
   ]
 } 
