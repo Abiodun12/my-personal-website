@@ -1,37 +1,54 @@
 import { blogPosts } from './blog'
 
 export const siteConfig = {
-  name: 'AB',
-  title: 'LIFE OF ABIODUN',
-  bio: `I'm a software developer passionate about creating elegant solutions to complex problems.
-  I specialize in web development and enjoy working with modern technologies like React and Node.js.
-  In my free time, I contribute to open-source projects and explore new programming paradigms.`,
-
+  title: "LIFE OF AB",
+  description: "Personal website of Abiodun (AB) Soneye",
+  author: "Abiodun Soneye",
+  email: "Soneyebiodun@gmail.com",
+  socialLinks: {
+    github: "https://github.com/Abiodun12",
+    linkedin: "https://www.linkedin.com/in/abiodun-ab-soneye-1b7a80290/"
+  },
+  about: {
+    name: "Abiodun (AB) Soneye",
+    role: "Tech Enthusiast & Lifelong Learner",
+    bio: "Tech enthusiast, lifelong learner, and adventurer navigating the exciting intersections of technology, creativity, and life.",
+    interests: [
+      "Venture Capital",
+      "Startups",
+      "AI",
+      "Technology for Small Businesses",
+      "Community Impact"
+    ],
+    hobbies: [
+      "Music",
+      "Concerts",
+      "Hanging out with friends",
+      "Planning next big moves"
+    ]
+  },
   projects: [
     {
-      name: 'Project 1',
-      description: 'A brief description of Project 1',
-      link: '/projects/project1',
+      name: "Smart Pet Plus",
+      description: "AI-powered pet recognition and story generation app",
+      link: "/smart-pet-plus",
+      status: "live",
+      tech: ["Python", "Flask", "Azure CV", "DeepSeek AI", "HTML/CSS"]
     },
     {
-      name: 'Project 2',
-      description: 'A brief description of Project 2',
-      link: '/projects/project2',
+      name: "Personal Website",
+      description: "A terminal-style portfolio website built with Next.js",
+      link: "https://github.com/Abiodun12/my-personal-website",
+      status: "live",
+      tech: ["Next.js", "TypeScript", "React"]
     },
     {
-      name: 'Project 3',
-      description: 'A brief description of Project 3',
-      link: '/projects/project3',
-    },
+      name: "Coming Soon",
+      description: "More exciting projects in development",
+      link: "/coming-soon",
+      status: "in-progress",
+      tech: ["TBA"]
+    }
   ],
-
-  socialLinks: {
-    linkedin: 'https://linkedin.com/in/ab',
-    github: 'https://github.com/ab',
-    twitter: 'https://twitter.com/ab',
-  },
-
-  email: 'ab@example.com',
-
   blogPosts,
 } 
