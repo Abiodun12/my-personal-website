@@ -93,6 +93,23 @@ main {
   line-height: 1.5;
 }
 
+.terminal-output h1,
+.terminal-output h2,
+.terminal-output h3 {
+  color: var(--text-color);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 1rem;
+  text-shadow: 0 0 5px var(--text-color);
+}
+
+.terminal-output:not(:empty)::before {
+  content: '$';
+  color: var(--text-color);
+  opacity: 0.7;
+  margin-right: 0.5em;
+}
+
 a, button {
   min-height: 44px;
   min-width: 44px;
@@ -147,4 +164,20 @@ a:hover::after {
 
 .project-item a:hover {
   color: #ffffff;
+}
+
+a[target="_blank"].terminal-link {
+  border-bottom: 1px dashed var(--text-color);
+  padding-bottom: 2px;
+}
+
+a[target="_blank"].terminal-link:hover {
+  border-bottom-style: solid;
+  text-shadow: 0 0 8px var(--text-color);
+}
+
+::selection {
+  background: rgba(0, 255, 0, 0.2);
+  color: var(--text-color);
+  text-shadow: 0 0 8px var(--text-color);
 } 

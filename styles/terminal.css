@@ -57,12 +57,42 @@
 }
 
 .terminal-link {
-  color: #00FF00;
+  color: var(--text-color);
   text-decoration: none;
+  position: relative;
+  padding: 0.2em 0.4em;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  font-weight: bold;
+  letter-spacing: 0.5px;
 }
 
 .terminal-link:hover {
-  text-decoration: underline;
+  text-decoration: none;
+  text-shadow: 0 0 8px var(--text-color);
+  background: rgba(0, 255, 0, 0.1);
+  border-radius: 4px;
+}
+
+/* Add pulsing glow effect */
+.terminal-link::before {
+  content: '>';
+  position: absolute;
+  left: -1em;
+  opacity: 0;
+  transition: all 0.3s ease;
+  color: var(--text-color);
+  animation: pulse 2s infinite;
+}
+
+.terminal-link:hover::before {
+  opacity: 1;
+  left: -0.8em;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
 }
 
 .cursor {

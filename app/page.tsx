@@ -10,7 +10,7 @@ export default function HomePage() {
   return (
     <main>
       <Terminal>
-        Welcome to {siteConfig.title}
+        Welcome to THE LIFE OF AB
         <br /><br />
         Type 'help' for available commands:
         <br /><br />
@@ -19,19 +19,19 @@ export default function HomePage() {
       </Terminal>
 
       <Terminal>
-        Available commands:
+        Available Commands:
         <br />
-        - <TerminalLink href="/about">about</TerminalLink>: Learn more about me
+        - <TerminalLink href="/about">ABOUT</TerminalLink>: Learn More About Me
         <br />
-        - <TerminalLink href="/projects">projects</TerminalLink>: View my portfolio
+        - <TerminalLink href="/projects">PROJECTS</TerminalLink>: View My Portfolio
         <br />
-        - <TerminalLink href="/blog">blog</TerminalLink>: Read my thoughts
+        - <TerminalLink href="/blog">BLOG</TerminalLink>: Read My Thoughts
         <br />
-        - <TerminalLink href="/coming-soon">coming-soon</TerminalLink>: See what's next
+        - <TerminalLink href="/coming-soon">COMING SOON</TerminalLink>: See What's Next
       </Terminal>
 
       <Terminal>
-        $ echo "Connect with me:"
+        $ echo "Connect With Me:"
         <br />
         LinkedIn:{' '}
         <a 
@@ -40,7 +40,7 @@ export default function HomePage() {
           rel="noopener noreferrer"
           className="terminal-link"
         >
-          linkedin.com/in/abiodun-ab-soneye
+          LinkedIn/Abiodun-AB-Soneye
         </a>
         <br />
         GitHub:{' '}
@@ -50,7 +50,7 @@ export default function HomePage() {
           rel="noopener noreferrer"
           className="terminal-link"
         >
-          github.com/Abiodun12
+          GitHub/Abiodun12
         </a>
         <br />
         Email:{' '}
