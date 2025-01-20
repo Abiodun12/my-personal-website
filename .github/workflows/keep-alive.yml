@@ -1,19 +1,32 @@
+# Keep-Alive Workflow
+# Purpose: Prevents Render free tier from sleeping by sending periodic health checks
+# Runs every 10 minutes to maintain instance availability
+
 name: Keep Render Alive
+
 on:
   schedule:
     - cron: '*/10 * * * *'  # Runs every 10 minutes
-  workflow_dispatch:  # Allows manual trigger
+  workflow_dispatch:  # Allows manual trigger for testing
 
 jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
       - name: Ping Render App Health Check
+        id: health_check
         run: |
-          curl -X GET "https://my-personal-website-t7tw.onrender.com/health" \
+          response=$(curl -s -X GET "https://my-personal-website-t7tw.onrender.com/health" \
           -H "Accept: application/json" \
-          -w "\n Status: %{http_code}"
-        continue-on-error: true
+          -w "\nStatus: %{http_code}")
+          echo "$response"
+          if [[ $response == *'"status":"ok"'* ]]; then
+            echo "Health check successful"
+          else
+            echo "Health check failed"
+            exit 1
+          fi
+        continue-on-error: true  # Prevent workflow failure if Render is starting up
       
       - name: Log Time
-        run: echo "Ping executed at $(date)" 
+        run: echo "Health check executed at $(date UTC) UTC" 

@@ -74,11 +74,18 @@ def analyze_image_route():
         }), 500
 
 @app.route('/health', methods=['GET'])
-def health_check():
+def health_check() -> dict:
+    """
+    Health check endpoint to monitor API status.
+
+    Returns:
+        dict: Status information including timestamp and message
+    """
     return jsonify({
         'status': 'ok',
         'timestamp': datetime.datetime.utcnow().isoformat(),
-        'message': 'Smart Pet API is running'
+        'message': 'Smart Pet API is running',
+        'version': '1.0.0'  # Added for monitoring
     })
 
 def analyze_image(image_data):
