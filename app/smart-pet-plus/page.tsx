@@ -1,13 +1,11 @@
 'use client'
 
-import React, { useState } from 'react'
-import { Terminal } from '../../components/Terminal'
-import { Cursor } from '../../components/Cursor'
+import { useState } from 'react'
 import styles from './SmartPetPlus.module.css'
 
 export default function SmartPetPlus() {
   const [image, setImage] = useState<string | null>(null)
-  const [story, setStory] = useState<string | null>(null)
+  const [description, setDescription] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -17,7 +15,13 @@ export default function SmartPetPlus() {
     setError(null)
     
     const formData = new FormData(e.currentTarget)
-    formData.append('image', formData.get('uploaded-file') as File)
+    const file = formData.get('uploaded-file') as File
+    
+    if (!file) {
+      setError('Please select a file')
+      setLoading(false)
+      return
+    }
     
     try {
       const response = await fetch('/api/smart-pet-plus', {
@@ -35,11 +39,13 @@ export default function SmartPetPlus() {
       if (data.error) {
         setError(data.error)
       } else {
-        setImage(data.image)
-        setStory(data.story)
+        // Display the uploaded image
+        setImage(URL.createObjectURL(file))
+        // Set the description from the API
+        setDescription(data.description)
       }
     } catch (err) {
-      console.error('Error:', err) // Debug log
+      console.error('Error:', err)
       setError(err instanceof Error ? err.message : 'Error processing image')
     } finally {
       setLoading(false)
@@ -47,47 +53,52 @@ export default function SmartPetPlus() {
   }
 
   return (
-    <main>
-      <Terminal>
-        <div className={styles.container}>
-          <header className={styles.header}>
-            <h1>SmartPet+ by Cougar AI</h1>
-          </header>
+    <div className={styles.container}>
+      <div className={styles.header}>
+        <h1>SmartPet+ by Cougar AI</h1>
+        <p>Upload a Picture of Your Pet (or Any Animal)</p>
+        <p>We'll identify what it is, then tell you a heartwarming story!</p>
+      </div>
 
-          <div className={styles.content}>
-            <h2>Upload a Picture of Your Pet (or Any Animal)</h2>
-            <p>We'll identify what it is, then tell you a heartwarming story!</p>
+      <div className={styles.content}>
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <input
+            type="file"
+            name="uploaded-file"
+            accept="image/*"
+            className={styles.fileInput}
+          />
+          <button 
+            type="submit" 
+            className={styles.submitButton}
+            disabled={loading}
+          >
+            {loading ? 'Processing...' : 'Submit'}
+          </button>
+        </form>
 
-            <form onSubmit={handleSubmit} className={styles.form}>
-              <input
-                type="file"
-                name="uploaded-file"
-                accept=".jpg,.jpeg,.png,.gif"
-                required
-                className={styles.fileInput}
-              />
-              <button type="submit" className={styles.submitButton}>
-                Submit
-              </button>
-            </form>
-
-            {loading && (
-              <div className={styles.loading}>
-                Processing your image... <Cursor />
-              </div>
-            )}
-
-            {error && <div className={styles.error}>{error}</div>}
-
-            {image && story && (
-              <div className={styles.story}>
-                <img src={image} alt="Uploaded Pet" />
-                <p>{story}</p>
-              </div>
-            )}
+        {error && (
+          <div className={styles.error}>
+            {error}
           </div>
-        </div>
-      </Terminal>
-    </main>
+        )}
+
+        {loading && (
+          <div className={styles.loading}>
+            Analyzing your image...
+          </div>
+        )}
+
+        {image && description && (
+          <div className={styles.story}>
+            <img src={image} alt="Uploaded pet" />
+            <div>
+              <h3>Analysis Result:</h3>
+              <p>{description}</p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   )
 } 
