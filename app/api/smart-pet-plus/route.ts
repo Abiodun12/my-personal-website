@@ -13,15 +13,9 @@ export async function POST(request: Request) {
     const bytes = await file.arrayBuffer()
     const base64Image = Buffer.from(bytes).toString('base64')
 
-    // Get the domain from the request headers or use the Vercel URL
-    const domain = process.env.VERCEL_URL 
-      ? `https://${process.env.VERCEL_URL}`
-      : 'http://localhost:3000'
-
-    // Construct absolute URL
-    const apiUrl = new URL('/api/analyze', domain).toString()
-    console.log('Making request to:', apiUrl)
-
+    // Point to external Python API (we'll deploy this separately)
+    const apiUrl = process.env.PYTHON_API_URL || 'http://localhost:5000/api/analyze'
+    
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
@@ -33,29 +27,17 @@ export async function POST(request: Request) {
       }),
     })
 
-    const responseText = await response.text()
-    console.log('API Response:', response.status, responseText)
-
     if (!response.ok) {
-      throw new Error(`API returned ${response.status}: ${responseText}`)
+      const errorText = await response.text()
+      throw new Error(`API returned ${response.status}: ${errorText}`)
     }
 
-    // Try to parse the response as JSON
-    let data
-    try {
-      data = JSON.parse(responseText)
-    } catch (e) {
-      throw new Error(`Invalid JSON response: ${responseText}`)
-    }
-
+    const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Detailed error:', error)
+    console.error('Error:', error)
     return NextResponse.json(
-      { 
-        error: error instanceof Error ? error.message : 'Error processing request',
-        details: error instanceof Error ? error.stack : undefined
-      }, 
+      { error: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }
