@@ -2,12 +2,20 @@
   --background-color: #1e1e1e;
   --text-color: #00ff00;
   --link-color: #00ff00;
+  --font-size-base: clamp(14px, 3vw, 16px);
+  --line-height-base: 1.5;
 }
 
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  font-size: 100%;
+  -webkit-text-size-adjust: 100%;
 }
 
 html, 
@@ -16,9 +24,12 @@ body {
   height: 100%;
   margin: 0;
   padding: 0;
+  overflow: hidden;
   background-color: var(--background-color);
   color: var(--text-color);
   font-family: 'Courier New', Courier, monospace;
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
 }
 
 .terminal-container {
@@ -75,6 +86,14 @@ main {
   padding: 8px;
   margin: 4px 0;
   line-height: 1.5;
+}
+
+a, button {
+  min-height: 44px;
+  min-width: 44px;
+  padding: clamp(8px, 2vw, 12px);
+  display: inline-flex;
+  align-items: center;
 }
 
 a {
