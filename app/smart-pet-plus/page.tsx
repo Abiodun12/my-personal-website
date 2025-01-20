@@ -5,7 +5,8 @@ import styles from './SmartPetPlus.module.css'
 
 export default function SmartPetPlus() {
   const [image, setImage] = useState<string | null>(null)
-  const [description, setDescription] = useState<string | null>(null)
+  const [subject, setSubject] = useState<string | null>(null)
+  const [story, setStory] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -30,7 +31,7 @@ export default function SmartPetPlus() {
       })
       
       const data = await response.json()
-      console.log('Response:', data) // Debug log
+      console.log('Response:', data)
       
       if (!response.ok) {
         throw new Error(data.error || 'Server error')
@@ -39,10 +40,9 @@ export default function SmartPetPlus() {
       if (data.error) {
         setError(data.error)
       } else {
-        // Display the uploaded image
         setImage(URL.createObjectURL(file))
-        // Set the description from the API
-        setDescription(data.description)
+        setSubject(data.subject)
+        setStory(data.story)
       }
     } catch (err) {
       console.error('Error:', err)
@@ -89,12 +89,14 @@ export default function SmartPetPlus() {
           </div>
         )}
 
-        {image && description && (
+        {image && subject && story && (
           <div className={styles.story}>
             <img src={image} alt="Uploaded pet" />
             <div>
               <h3>Analysis Result:</h3>
-              <p>{description}</p>
+              <p>Identified: {subject}</p>
+              <h3>Your Pet's Story:</h3>
+              <p>{story}</p>
             </div>
           </div>
         )}

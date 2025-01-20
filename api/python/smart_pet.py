@@ -20,6 +20,7 @@ load_dotenv()
 AZURE_API_KEY = os.getenv('AZURE_COMPUTER_VISION_API_KEY')
 AZURE_ENDPOINT = os.getenv('AZURE_COMPUTER_VISION_ENDPOINT')
 DEEPSEEK_API_KEY = os.getenv('DEEPSEEK_API_KEY')
+DEEPSEEK_MODEL = "deepseek-chat"
 
 # Initialize Azure Computer Vision Client
 cv_client = ComputerVisionClient(
@@ -32,7 +33,7 @@ def home():
     return jsonify({"status": "ok", "message": "API is running"})
 
 @app.route('/api/analyze', methods=['POST', 'OPTIONS'])
-def analyze_image():
+def analyze_image_route():
     if request.method == 'OPTIONS':
         response = jsonify({'status': 'ok'})
         response.headers.add('Access-Control-Allow-Methods', 'POST')
@@ -49,22 +50,19 @@ def analyze_image():
 
         # Decode base64 image
         image_data = base64.b64decode(data['image'])
-        image_stream = io.BytesIO(image_data)
+        
+        # Analyze image with Azure
+        subject = analyze_image(image_data)
+        print(f"Identified subject: {subject}")
 
-        # Analyze with Azure
-        print("Analyzing image with Azure")  # Debug log
-        analysis = cv_client.analyze_image_in_stream(
-            image_stream,
-            visual_features=['Description']
-        )
-
-        # Get description
-        description = analysis.description.captions[0].text if analysis.description.captions else "No description available"
-        print(f"Got description: {description}")  # Debug log
+        # Generate story with DeepSeek
+        story = generate_story(subject)
+        print(f"Generated story about: {subject}")
 
         return jsonify({
             'success': True,
-            'description': description
+            'subject': subject,
+            'story': story
         })
 
     except Exception as e:
@@ -74,14 +72,17 @@ def analyze_image():
             'error': str(e)
         }), 500
 
-def identify_subject(image_data):
+def analyze_image(image_data):
+    """Analyze image using Azure Computer Vision"""
     image_stream = io.BytesIO(image_data)
-    
+
+    # Analyze with multiple feature types
     analysis = cv_client.analyze_image_in_stream(
         image_stream,
         visual_features=[VisualFeatureTypes.objects, VisualFeatureTypes.description, VisualFeatureTypes.tags]
     )
-    
+
+    # Check objects first
     if analysis.objects:
         sorted_objects = sorted(
             analysis.objects,
@@ -91,28 +92,31 @@ def identify_subject(image_data):
         for obj in sorted_objects:
             if obj.object_property.lower() not in ["person", "human face", "grass", "indoor", "outdoor"]:
                 return obj.object_property.lower()
-    
+
+    # Check description caption
     if analysis.description and analysis.description.captions:
         return analysis.description.captions[0].text.lower()
-    
+
+    # Check tags
     if analysis.tags:
         sorted_tags = sorted(analysis.tags, key=lambda t: t.confidence, reverse=True)
         for tag in sorted_tags:
             if tag.name.lower() not in ["person", "human", "grass", "indoor", "outdoor"]:
                 return tag.name.lower()
-    
+
     return "animal"
 
 def generate_story(subject):
+    """Generate story using DeepSeek API"""
     prompt = f"Tell me a heartwarming story about {subject}."
     
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {DEEPSEEK_API_KEY}"
     }
-    
+
     data = {
-        "model": "deepseek-chat",
+        "model": DEEPSEEK_MODEL,
         "messages": [
             {"role": "system", "content": "You are a helpful assistant."},
             {"role": "user", "content": prompt}
@@ -121,7 +125,7 @@ def generate_story(subject):
         "max_tokens": 150,
         "stream": False
     }
-    
+
     try:
         response = requests.post(
             "https://api.deepseek.com/v1/chat/completions",
@@ -129,11 +133,11 @@ def generate_story(subject):
             json=data
         )
         response.raise_for_status()
-        response_data = response.json()
-        return response_data['choices'][0]['message']['content'].strip()
+        story = response.json()["choices"][0]["message"]["content"]
+        return story
     except Exception as e:
-        print(f"Error generating story: {e}")
-        return f"Sorry, I couldn't generate a story at this time. But I identified a {subject}!"
+        print(f"DeepSeek API error: {str(e)}")
+        return f"A story about {subject}..."
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 10000))
