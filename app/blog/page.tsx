@@ -8,7 +8,7 @@ import { blogPosts } from '../../config/blog'
 
 export default function BlogPage() {
   return (
-    <main>
+    <div className="main-container">
       <Terminal>
         $ ls blog/
         <Cursor />
@@ -30,6 +30,6 @@ export default function BlogPage() {
       <Terminal>
         $ <TerminalLink href="/">cd ..</TerminalLink>
       </Terminal>
-    </main>
+    </div>
   )
 } 
