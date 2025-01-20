@@ -2,8 +2,10 @@
   --background-color: #1e1e1e;
   --text-color: #00ff00;
   --link-color: #00ff00;
+  --glow-color: rgba(0, 255, 0, 0.5);
   --font-size-base: clamp(14px, 2.5vw, 16px);
   --line-height-base: 1.6;
+  --grid-color: rgba(0, 255, 0, 0.1);
 }
 
 * {
@@ -41,6 +43,21 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  background-image: 
+    linear-gradient(var(--grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+  background-size: 20px 20px;
+  animation: gridMove 20s linear infinite;
+}
+
+@keyframes gridMove {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 20px 20px;
+  }
 }
 
 .terminal {
