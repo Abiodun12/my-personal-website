@@ -8,6 +8,7 @@ import base64
 from dotenv import load_dotenv
 import io
 import requests
+import datetime
 
 app = Flask(__name__)
 # Enable CORS for all domains and routes
@@ -71,6 +72,14 @@ def analyze_image_route():
             'success': False,
             'error': str(e)
         }), 500
+
+@app.route('/health', methods=['GET'])
+def health_check():
+    return jsonify({
+        'status': 'ok',
+        'timestamp': datetime.datetime.utcnow().isoformat(),
+        'message': 'Smart Pet API is running'
+    })
 
 def analyze_image(image_data):
     """Analyze image using Azure Computer Vision"""
