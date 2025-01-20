@@ -92,11 +92,15 @@ export default function SmartPetPlus() {
         {image && subject && story && (
           <div className={styles.story}>
             <img src={image} alt="Uploaded pet" />
-            <div>
-              <h3>Analysis Result:</h3>
-              <p>Identified: {subject}</p>
-              <h3>Your Pet's Story:</h3>
-              <p>{story}</p>
+            <div className={styles.storyContent}>
+              <div>
+                <h3>Analysis Result:</h3>
+                <p>Identified: {subject}</p>
+              </div>
+              <div>
+                <h3>Your Pet's Story:</h3>
+                <p>{story}</p>
+              </div>
             </div>
           </div>
         )}
