@@ -12,6 +12,12 @@ interface InteractiveTerminalProps {
   prompt?: string;
 }
 
+type CommandFunction = () => React.ReactNode | void;
+
+interface CommandMap {
+  [key: string]: CommandFunction;
+}
+
 export function InteractiveTerminal({ 
   initialOutput,
   prompt = "$"
@@ -21,7 +27,7 @@ export function InteractiveTerminal({
   const inputRef = useRef<HTMLInputElement>(null);
   const terminalRef = useRef<HTMLDivElement>(null);
 
-  const commands = {
+  const commands: CommandMap = {
     help: () => (
       <>
         Available Commands:<br/>
@@ -32,10 +38,22 @@ export function InteractiveTerminal({
         - contact: How to reach me
       </>
     ),
-    about: () => window.location.href = '/about',
-    projects: () => window.location.href = '/projects',
-    blog: () => window.location.href = '/blog',
-    clear: () => setHistory([]),
+    about: () => {
+      window.location.href = '/about';
+      return 'Redirecting to about page...';
+    },
+    projects: () => {
+      window.location.href = '/projects';
+      return 'Redirecting to projects page...';
+    },
+    blog: () => {
+      window.location.href = '/blog';
+      return 'Redirecting to blog page...';
+    },
+    clear: () => {
+      setHistory([]);
+      return 'Terminal cleared';
+    },
     contact: () => (
       <>
         Connect With Me:<br/>
@@ -48,10 +66,11 @@ export function InteractiveTerminal({
 
   const handleCommand = (cmd: string) => {
     const trimmedCmd = cmd.trim().toLowerCase();
-    let output: React.ReactNode;
+    let output: React.ReactNode = '';
 
     if (trimmedCmd in commands) {
-      output = commands[trimmedCmd as keyof typeof commands]();
+      const result = commands[trimmedCmd]();
+      output = result || `Executing command: ${trimmedCmd}`;
     } else if (trimmedCmd) {
       output = `Command not found: ${trimmedCmd}. Type 'help' for available commands.`;
     }
