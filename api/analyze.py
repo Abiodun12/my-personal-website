@@ -5,7 +5,6 @@ import io
 import os
 from azure.cognitiveservices.vision.computervision import ComputerVisionClient
 from msrest.authentication import CognitiveServicesCredentials
-import requests
 
 class handler(BaseHTTPRequestHandler):
     def do_POST(self):
@@ -41,6 +40,7 @@ class handler(BaseHTTPRequestHandler):
             # Send response
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
             
             response = json.dumps({
@@ -52,10 +52,18 @@ class handler(BaseHTTPRequestHandler):
         except Exception as e:
             self.send_response(500)
             self.send_header('Content-type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
             
             response = json.dumps({
                 'success': False,
                 'error': str(e)
             })
-            self.wfile.write(response.encode()) 
+            self.wfile.write(response.encode())
+
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.end_headers() 
