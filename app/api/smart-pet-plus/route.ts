@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 
-const RENDER_API_URL = process.env.RENDER_API_URL || 'https://my-personal-website-t7tw.onrender.com/api/analyze'
+// Make sure this matches your Render URL exactly
+const RENDER_API_URL = 'https://my-personal-website-t7tw.onrender.com/api/analyze'
 
 export async function POST(request: Request) {
   try {
@@ -14,13 +15,14 @@ export async function POST(request: Request) {
     // Convert file to base64
     const bytes = await file.arrayBuffer()
     const base64Image = Buffer.from(bytes).toString('base64')
-
-    console.log('Sending request to:', RENDER_API_URL) // For debugging
+    
+    console.log('Sending request to:', RENDER_API_URL) // Debug log
     
     const response = await fetch(RENDER_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
       body: JSON.stringify({ 
         image: base64Image,
@@ -30,10 +32,12 @@ export async function POST(request: Request) {
 
     if (!response.ok) {
       const errorText = await response.text()
+      console.error('API Error:', errorText) // Debug log
       throw new Error(`API returned ${response.status}: ${errorText}`)
     }
 
     const data = await response.json()
+    console.log('API Response:', data) // Debug log
     return NextResponse.json(data)
   } catch (error) {
     console.error('Error:', error)

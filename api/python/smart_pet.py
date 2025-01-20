@@ -27,12 +27,9 @@ cv_client = ComputerVisionClient(
     CognitiveServicesCredentials(AZURE_API_KEY)
 )
 
-@app.route('/', methods=['GET'])
+@app.route('/')
 def home():
-    return jsonify({
-        'status': 'ok',
-        'message': 'Server is running'
-    })
+    return jsonify({"status": "ok", "message": "API is running"})
 
 @app.route('/api/analyze', methods=['POST', 'OPTIONS'])
 def analyze_image():
@@ -43,34 +40,39 @@ def analyze_image():
         return response
 
     try:
-        # Handle JSON with base64 image
-        if request.is_json:
-            data = request.get_json()
-            if 'image' not in data:
-                return jsonify({'error': 'No image in JSON'}), 400
-            image_data = base64.b64decode(data['image'])
-        # Handle form data with file
-        elif 'image' in request.files:
-            file = request.files['image']
-            image_data = file.read()
-        else:
-            return jsonify({'error': 'No image found'}), 400
+        print("Received request")  # Debug log
+        data = request.get_json()
+        
+        if not data or 'image' not in data:
+            print("No image in request")  # Debug log
+            return jsonify({'error': 'No image found in request'}), 400
 
-        # Process with Azure
+        # Decode base64 image
+        image_data = base64.b64decode(data['image'])
         image_stream = io.BytesIO(image_data)
+
+        # Analyze with Azure
+        print("Analyzing image with Azure")  # Debug log
         analysis = cv_client.analyze_image_in_stream(
             image_stream,
             visual_features=['Description']
         )
 
+        # Get description
+        description = analysis.description.captions[0].text if analysis.description.captions else "No description available"
+        print(f"Got description: {description}")  # Debug log
+
         return jsonify({
             'success': True,
-            'description': analysis.description.captions[0].text
+            'description': description
         })
 
     except Exception as e:
-        print(f"Error: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+        print(f"Error: {str(e)}")  # Debug log
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
 
 def identify_subject(image_data):
     image_stream = io.BytesIO(image_data)
