@@ -26,11 +26,6 @@ export default function RootLayout({
       <body suppressHydrationWarning>
         <div className="terminal-container">
           <div className="terminal">
-            <div className="terminal-header">
-              <div className="terminal-button close"></div>
-              <div className="terminal-button minimize"></div>
-              <div className="terminal-button maximize"></div>
-            </div>
             <div className="terminal-content">
               {children}
             </div>

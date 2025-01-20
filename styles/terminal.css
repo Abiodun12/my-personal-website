@@ -1,29 +1,45 @@
 .terminal-container {
   width: 100vw;
   height: 100vh;
-  padding: clamp(0.5rem, 2vw, 2rem);
+  padding: clamp(1rem, 3vw, 2rem);
   display: flex;
   align-items: center;
   justify-content: center;
+  background-color: var(--background-color);
   overflow: hidden;
 }
 
 .terminal {
-  width: 100%;
-  height: 100%;
-  max-width: 1200px;
+  width: min(100%, 1200px);
+  height: min(100%, 800px);
   margin: auto;
-  background-color: rgba(0, 0, 0, 0.9);
-  border-radius: clamp(4px, 1vw, 10px);
+  background-color: rgba(0, 0, 0, 0.95);
+  border-radius: 0;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 0 20px rgba(0, 255, 0, 0.1);
+  position: relative;
+}
+
+.terminal::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--text-color),
+    transparent
+  );
+  opacity: 0.3;
 }
 
 .terminal-content {
   flex: 1;
-  padding: clamp(0.75rem, 2vw, 1.5rem);
+  padding: clamp(1rem, 3vw, 2rem);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
@@ -31,17 +47,11 @@
 }
 
 .terminal-output {
-  background-color: #1E1E1E;
-  color: #00FF00;
+  color: var(--text-color);
   font-family: 'Courier New', monospace;
-  padding: 20px;
-  border-radius: 8px;
-  margin: 20px auto;
-  max-width: 800px;
-  white-space: pre-wrap;
-  font-size: clamp(14px, 3vw, 16px);
-  line-height: 1.5;
-  margin-bottom: clamp(0.5rem, 2vw, 1rem);
+  padding: clamp(0.75rem, 2vw, 1.5rem);
+  line-height: 1.6;
+  font-size: clamp(14px, 2.5vw, 16px);
   word-wrap: break-word;
   overflow-wrap: break-word;
 }
