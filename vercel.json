@@ -2,14 +2,16 @@
   "version": 2,
   "functions": {
     "api/analyze.py": {
-      "runtime": "@vercel/python@4.0.0"
+      "runtime": "@vercel/python@4.0.0",
+      "memory": 1024,
+      "maxDuration": 10
     }
   },
   "routes": [
     {
       "src": "/api/analyze",
       "methods": ["POST", "OPTIONS"],
-      "dest": "api/analyze.py"
+      "dest": "/api/analyze.py"
     }
   ]
 } 
