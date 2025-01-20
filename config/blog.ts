@@ -4,7 +4,7 @@ export interface BlogPost {
   date: string
   description: string
   url: string
-  content?: string
+  content: string
 }
 
 export const blogPosts: BlogPost[] = [
@@ -15,6 +15,8 @@ export const blogPosts: BlogPost[] = [
     description: 'Reflecting on changes, both personal and technological, as we move forward into an exciting future.',
     url: '/blog/embracing-change-and-ai',
     content: `
+      January 20, 2025
+
       Wow, what a day! Today marked the inauguration of Donald Trump back into office. The next four years are sure to be interesting, and I can only hope that the changes ahead help me reach—and even exceed—my goals. This next year is especially critical for me, and I'm excited to see all the amazing things I'll achieve.
 
       On another note, I've been learning so much while building this website. Thanks to AI, I've added a bunch of new features today. It's incredible how this technology has transformed my life. Growing up, I was always fascinated by AI, especially in movies. Now, seeing it become a reality is mind-blowing!
