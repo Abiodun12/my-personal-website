@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 
+const RENDER_API_URL = process.env.RENDER_API_URL || 'https://your-app.onrender.com/api/analyze'
+
 export async function POST(request: Request) {
   try {
     const formData = await request.formData()
@@ -13,10 +15,7 @@ export async function POST(request: Request) {
     const bytes = await file.arrayBuffer()
     const base64Image = Buffer.from(bytes).toString('base64')
 
-    // Point to external Python API (we'll deploy this separately)
-    const apiUrl = process.env.PYTHON_API_URL || 'http://localhost:5000/api/analyze'
-    
-    const response = await fetch(apiUrl, {
+    const response = await fetch(RENDER_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

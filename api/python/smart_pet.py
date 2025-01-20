@@ -36,7 +36,6 @@ def home():
 
 @app.route('/api/analyze', methods=['POST', 'OPTIONS'])
 def analyze_image():
-    # Handle preflight requests
     if request.method == 'OPTIONS':
         response = jsonify({'status': 'ok'})
         response.headers.add('Access-Control-Allow-Methods', 'POST')
@@ -44,42 +43,34 @@ def analyze_image():
         return response
 
     try:
-        print("Request received")
-        
-        if 'image' not in request.files:
-            return jsonify({
-                'success': False,
-                'error': 'No image file found'
-            }), 400
+        # Handle JSON with base64 image
+        if request.is_json:
+            data = request.get_json()
+            if 'image' not in data:
+                return jsonify({'error': 'No image in JSON'}), 400
+            image_data = base64.b64decode(data['image'])
+        # Handle form data with file
+        elif 'image' in request.files:
+            file = request.files['image']
+            image_data = file.read()
+        else:
+            return jsonify({'error': 'No image found'}), 400
 
-        file = request.files['image']
-        image_data = file.read()
-        
-        # Identify the subject using Azure
-        print("Analyzing image with Azure...")
-        subject = identify_subject(image_data)
-        print(f"Identified subject: {subject}")
-        
-        # Generate story using DeepSeek
-        print("Generating story with DeepSeek...")
-        story = generate_story(subject)
-        print("Story generated successfully")
-        
-        # Encode image for response
-        image_b64 = base64.b64encode(image_data).decode('utf-8')
-        
+        # Process with Azure
+        image_stream = io.BytesIO(image_data)
+        analysis = cv_client.analyze_image_in_stream(
+            image_stream,
+            visual_features=['Description']
+        )
+
         return jsonify({
             'success': True,
-            'image': f'data:image/jpeg;base64,{image_b64}',
-            'story': story
+            'description': analysis.description.captions[0].text
         })
-        
+
     except Exception as e:
-        print(f"Error processing request: {str(e)}")
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 500
+        print(f"Error: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 
 def identify_subject(image_data):
     image_stream = io.BytesIO(image_data)
@@ -143,8 +134,5 @@ def generate_story(subject):
         return f"Sorry, I couldn't generate a story at this time. But I identified a {subject}!"
 
 if __name__ == '__main__':
-    print("Starting server with Azure and DeepSeek APIs...")
-    print(f"Azure Endpoint: {AZURE_ENDPOINT}")
-    print("Azure Key Length:", len(AZURE_API_KEY) if AZURE_API_KEY else "Not set")
-    print("DeepSeek Key Length:", len(DEEPSEEK_API_KEY) if DEEPSEEK_API_KEY else "Not set")
-    app.run(host='127.0.0.1', port=5000, debug=True) 
+    port = int(os.environ.get('PORT', 10000))
+    app.run(host='0.0.0.0', port=port) 
