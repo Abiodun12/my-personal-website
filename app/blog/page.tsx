@@ -18,7 +18,7 @@ export default function BlogPage() {
         {blogPosts.map((post, index) => (
           <React.Fragment key={post.slug}>
             <div style={{ marginBottom: '1rem' }}>
-              <TerminalLink href={post.url}>{post.title}</TerminalLink>
+              <TerminalLink href={`/blog/${post.slug}`}>{post.title}</TerminalLink>
               <br />
               <span style={{ color: '#666' }}>Published: {post.date}</span>
               <br />

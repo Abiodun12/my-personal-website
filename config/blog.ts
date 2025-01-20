@@ -22,7 +22,7 @@ export const blogPosts: BlogPost[] = [
       On another note, I've been learning so much while building this website. Thanks to AI, I've added a bunch of new features today. It's incredible how this technology has transformed my life. Growing up, I was always fascinated by AI, especially in movies. Now, seeing it become a reality is mind-blowing!
 
       I'm so excited for what the future holds—for myself, for technology, and for the world. Here's to continued growth and endless possibilities!
-    `
+    `.trim(),
   },
   {
     slug: 'welcome-to-my-corner',
@@ -38,7 +38,7 @@ export const blogPosts: BlogPost[] = [
       Life is beautiful when we lean into our passions and open ourselves to growth. Here's to celebrating the little wins, the challenges that shape us, and the adventures that await.
 
       Welcome to my corner of the internet.
-    `
+    `.trim(),
   }
   // Add more blog posts here as needed
 ] 
