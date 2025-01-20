@@ -109,7 +109,7 @@ def analyze_image(image_data):
 def generate_story(subject):
     """Generate a concise, engaging story with a fun fact about the subject."""
     
-    prompt = f"""Write a very short, fun, and engaging story (max 2-3 sentences) about {subject}, 
+    prompt = f"""Write a very short, fun, and engaging story (max 2-4 sentences) about {subject}, 
     followed by an interesting fun fact. Make it heartwarming and attention-grabbing. 
     Format: [Story] [Fun Fact: your fact here]"""
 
@@ -121,10 +121,10 @@ def generate_story(subject):
     data = {
         "model": DEEPSEEK_MODEL,
         "messages": [
-            {"role": "system", "content": "You are a creative storyteller who specializes in short, engaging pet stories with interesting facts. Keep stories brief and fun."},
+            {"role": "system", "content": "You are a creative storyteller who specializes in short, engaging pet and animal stories with interesting facts. Keep stories brief and fun."},
             {"role": "user", "content": prompt}
         ],
-        "temperature": 0.8,
+        "temperature": 1.5,
         "max_tokens": 100,  # Reduced for shorter stories
         "stream": False
     }
