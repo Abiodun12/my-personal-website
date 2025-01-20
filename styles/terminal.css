@@ -226,4 +226,21 @@
 
 .folder:hover::before {
   transform: scaleX(1);
+}
+
+.blog-entry {
+  padding: 0.5rem;
+  border-left: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.blog-entry:hover {
+  border-left-color: var(--text-color);
+  background: rgba(0, 255, 0, 0.05);
+  padding-left: 1rem;
+}
+
+.blog-entry .terminal-link {
+  font-size: 1.1em;
+  font-weight: bold;
 } 
