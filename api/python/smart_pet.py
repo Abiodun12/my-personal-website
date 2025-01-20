@@ -107,9 +107,12 @@ def analyze_image(image_data):
     return "animal"
 
 def generate_story(subject):
-    """Generate story using DeepSeek API"""
-    prompt = f"Tell me a heartwarming story about {subject}."
+    """Generate a concise, engaging story with a fun fact about the subject."""
     
+    prompt = f"""Write a very short, fun, and engaging story (max 2-3 sentences) about {subject}, 
+    followed by an interesting fun fact. Make it heartwarming and attention-grabbing. 
+    Format: [Story] [Fun Fact: your fact here]"""
+
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {DEEPSEEK_API_KEY}"
@@ -118,11 +121,11 @@ def generate_story(subject):
     data = {
         "model": DEEPSEEK_MODEL,
         "messages": [
-            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "system", "content": "You are a creative storyteller who specializes in short, engaging pet stories with interesting facts. Keep stories brief and fun."},
             {"role": "user", "content": prompt}
         ],
-        "temperature": 0.7,
-        "max_tokens": 150,
+        "temperature": 0.8,
+        "max_tokens": 100,  # Reduced for shorter stories
         "stream": False
     }
 
@@ -137,7 +140,7 @@ def generate_story(subject):
         return story
     except Exception as e:
         print(f"DeepSeek API error: {str(e)}")
-        return f"A story about {subject}..."
+        return f"Meet this amazing {subject}! Every day brings a new adventure with this wonderful companion. Fun Fact: Did you know that {subject}s have unique personalities just like humans?"
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 10000))
