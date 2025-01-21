@@ -4,9 +4,11 @@ import React from 'react'
 import { Terminal } from '../../components/Terminal'
 import { TerminalLink } from '../../components/TerminalLink'
 import { Cursor } from '../../components/Cursor'
-import { blogPosts } from '../../config/blog'
+import { getBlogPosts } from '../../utils/blog'
 
-export default function BlogPage() {
+export default async function BlogPage() {
+  const posts = getBlogPosts()
+
   return (
     <main style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
       <Terminal>
@@ -15,7 +17,7 @@ export default function BlogPage() {
       </Terminal>
 
       <Terminal>
-        {blogPosts.map((post, index) => (
+        {posts.map((post, index) => (
           <React.Fragment key={post.slug}>
             <div style={{ marginBottom: '1rem' }}>
               <TerminalLink href={`/blog/${post.slug}`}>{post.title}</TerminalLink>
@@ -24,7 +26,7 @@ export default function BlogPage() {
               <br />
               {post.description}
             </div>
-            {index < blogPosts.length - 1 && <br />}
+            {index < posts.length - 1 && <br />}
           </React.Fragment>
         ))}
       </Terminal>
