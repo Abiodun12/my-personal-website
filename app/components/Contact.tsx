@@ -1,43 +1,36 @@
 'use client'
 
 import styles from './Contact.module.css'
-import Link from 'next/link'
+import { TerminalLink } from '@/components/TerminalLink'
 
 export default function Contact() {
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>CONNECT WITH ME</h1>
       <div className={styles.links}>
-        <Link 
+        <TerminalLink 
           href="https://linkedin.com/in/abiodun-ab-soneye" 
-          target="_blank" 
-          className={styles.link}
         >
           LINKEDIN
-        </Link>
+        </TerminalLink>
 
-        <Link 
-          href="https://github.com/Abiodun12" 
-          target="_blank" 
-          className={styles.link}
+        <TerminalLink 
+          href="https://github.com/Abiodun12"
         >
           GITHUB
-        </Link>
+        </TerminalLink>
 
-        <Link 
-          href="https://bit.ly/abiodun-resume" 
-          target="_blank" 
-          className={styles.link}
+        <TerminalLink 
+          href="https://bit.ly/abiodun-resume"
         >
           RESUME
-        </Link>
+        </TerminalLink>
 
-        <Link 
-          href="mailto:Soneyebiodun@gmail.com" 
-          className={styles.link}
+        <TerminalLink 
+          href="mailto:Soneyebiodun@gmail.com"
         >
           EMAIL
-        </Link>
+        </TerminalLink>
       </div>
     </div>
   )

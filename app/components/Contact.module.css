@@ -15,6 +15,7 @@
   color: var(--text-color);
   text-shadow: 0 0 10px var(--accent-color);
   letter-spacing: 2px;
+  text-transform: uppercase;
 }
 
 .links {
@@ -26,7 +27,7 @@
 
 .link {
   font-size: clamp(1.2rem, 3vw, 1.5rem);
-  color: var(--text-color);
+  color: var(--text-color) !important;
   text-decoration: none;
   padding: 0.8rem 2rem;
   border: 2px solid var(--accent-color);
@@ -37,6 +38,11 @@
   overflow: hidden;
   width: 200px;
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  background: transparent;
 }
 
 .link::before {
@@ -59,6 +65,7 @@
   box-shadow: 0 0 20px var(--accent-color);
   text-shadow: 0 0 5px var(--accent-color);
   transform: scale(1.05);
+  background: rgba(0, 255, 0, 0.1);
 }
 
 .link:hover::before {

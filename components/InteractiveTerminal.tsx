@@ -1,6 +1,7 @@
 'use client'
 import React, { useState, useRef, useEffect } from 'react'
 import { Cursor } from './Cursor'
+import { TerminalLink } from './TerminalLink'
 
 interface Command {
   command: string;
@@ -31,11 +32,11 @@ export function InteractiveTerminal({
     help: () => (
       <>
         Available Commands:<br/>
-        - about: Learn more about me<br/>
-        - projects: View my portfolio<br/>
-        - blog: Read my thoughts<br/>
-        - clear: Clear terminal<br/>
-        - contact: How to reach me
+        - <TerminalLink href="/about">ABOUT</TerminalLink>: Learn more about me<br/>
+        - <TerminalLink href="/projects">PROJECTS</TerminalLink>: View my portfolio<br/>
+        - <TerminalLink href="/blog">BLOG</TerminalLink>: Read my thoughts<br/>
+        - <TerminalLink href="#" onClick={() => commands.clear()}>CLEAR</TerminalLink>: Clear terminal<br/>
+        - <TerminalLink href="#" onClick={() => commands.contact()}>CONTACT</TerminalLink>: How to reach me
       </>
     ),
     about: () => {
@@ -55,12 +56,39 @@ export function InteractiveTerminal({
       return 'Terminal cleared';
     },
     contact: () => (
-      <>
-        Connect With Me:<br/>
-        LinkedIn: linkedin.com/in/abiodun-ab-soneye<br/>
-        GitHub: github.com/Abiodun12<br/>
-        Email: Soneyebiodun@gmail.com
-      </>
+      <div className="terminal-contact">
+        CONNECT WITH ME:<br/><br/>
+        <TerminalLink 
+          href="https://linkedin.com/in/abiodun-ab-soneye" 
+          target="_blank"
+          rel="noopener noreferrer"
+          className="terminal-contact-link"
+        >
+          LINKEDIN
+        </TerminalLink><br/>
+        <TerminalLink 
+          href="https://github.com/Abiodun12" 
+          target="_blank"
+          rel="noopener noreferrer"
+          className="terminal-contact-link"
+        >
+          GITHUB
+        </TerminalLink><br/>
+        <TerminalLink 
+          href="https://bit.ly/abiodun-resume" 
+          target="_blank"
+          rel="noopener noreferrer"
+          className="terminal-contact-link"
+        >
+          RESUME
+        </TerminalLink><br/>
+        <TerminalLink 
+          href="mailto:Soneyebiodun@gmail.com"
+          className="terminal-contact-link"
+        >
+          EMAIL
+        </TerminalLink>
+      </div>
     )
   };
 
