@@ -1,5 +1,50 @@
-# Dependencies
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+venv/
+.env
+
+# Node
 node_modules/
+.next/
+out/
+build/
+.DS_Store
+*.pem
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Test files
+test.jpg
+api/python/test.jpg
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Dependencies
 __pycache__/
 *.pyc
 .env
@@ -29,11 +74,6 @@ yarn-error.log*
 
 # Misc
 *.pem
-
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
 
 # TypeScript
 *.tsbuildinfo
