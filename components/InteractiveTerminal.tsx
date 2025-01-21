@@ -85,7 +85,7 @@ export function InteractiveTerminal({
           GITHUB
         </TerminalLink><br/>
         <TerminalLink 
-          href="https://bit.ly/abiodun-resume" 
+          href="https://docs.google.com/document/d/1kh85MMIonwwWGMQ3kyEpyTTHlMxjWuiW46uZf1jMBJs/edit?usp=sharing" 
           target="_blank"
           rel="noopener noreferrer"
           className="terminal-contact-link"

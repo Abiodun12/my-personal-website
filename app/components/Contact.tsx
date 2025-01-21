@@ -21,7 +21,7 @@ export default function Contact() {
         </TerminalLink>
 
         <TerminalLink 
-          href="https://bit.ly/abiodun-resume"
+          href="https://docs.google.com/document/d/1kh85MMIonwwWGMQ3kyEpyTTHlMxjWuiW46uZf1jMBJs/edit?usp=sharing"
         >
           RESUME
         </TerminalLink>
