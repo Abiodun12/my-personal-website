@@ -35,8 +35,18 @@ export function InteractiveTerminal({
         - <TerminalLink href="/about">ABOUT</TerminalLink>: Learn more about me<br/>
         - <TerminalLink href="/projects">PROJECTS</TerminalLink>: View my portfolio<br/>
         - <TerminalLink href="/blog">BLOG</TerminalLink>: Read my thoughts<br/>
-        - <TerminalLink href="#" onClick={() => commands.clear()}>CLEAR</TerminalLink>: Clear terminal<br/>
-        - <TerminalLink href="#" onClick={() => commands.contact()}>CONTACT</TerminalLink>: How to reach me
+        - <TerminalLink 
+            href="#" 
+            onClick={() => handleCommand('clear')}
+          >
+            CLEAR
+          </TerminalLink>: Clear terminal<br/>
+        - <TerminalLink 
+            href="#" 
+            onClick={() => handleCommand('contact')}
+          >
+            CONTACT
+          </TerminalLink>: How to reach me
       </>
     ),
     about: () => {
@@ -53,7 +63,7 @@ export function InteractiveTerminal({
     },
     clear: () => {
       setHistory([]);
-      return 'Terminal cleared';
+      return null;
     },
     contact: () => (
       <div className="terminal-contact">
