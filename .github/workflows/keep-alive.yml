@@ -16,11 +16,19 @@ jobs:
     steps:
       - name: Send HTTP Request
         run: |
-          response=$(curl -s -o /dev/null -w "%{http_code}" ${{ secrets.RENDER_URL }})
+          response=$(curl -s -o /dev/null -w "%{http_code}" https://my-personal-website-t7tw.onrender.com)
           if [ $response -eq 200 ]; then
             echo "Successfully pinged the application"
           else
             echo "Received status code: $response"
+            echo "Retrying in 30 seconds..."
+            sleep 30
+            second_response=$(curl -s -o /dev/null -w "%{http_code}" https://my-personal-website-t7tw.onrender.com)
+            if [ $second_response -eq 200 ]; then
+              echo "Retry successful"
+            else
+              echo "Retry failed with status code: $second_response"
+            fi
           fi
         continue-on-error: true  # Prevent workflow failure if Render is starting up
       
