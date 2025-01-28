@@ -1,9 +1,22 @@
 import { NextResponse } from 'next/server'
+import { Ratelimit } from '@upstash/ratelimit'
+import { Redis } from '@upstash/redis'
 
 // Make sure this matches your Render URL exactly
 const RENDER_API_URL = 'https://my-personal-website-t7tw.onrender.com/api/analyze'
 
 export async function POST(request: Request) {
+  const identifier = request.headers.get('x-forwarded-for') || 'anonymous'
+  const ratelimit = new Ratelimit({
+    redis: Redis.fromEnv(),
+    limiter: Ratelimit.slidingWindow(5, '1 m'),
+  })
+  const { success } = await ratelimit.limit(identifier)
+  
+  if (!success) {
+    return new Response('Too many requests', { status: 429 })
+  }
+
   try {
     const formData = await request.formData()
     const file = formData.get('uploaded-file') as File
