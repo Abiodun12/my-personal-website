@@ -2,18 +2,16 @@
 
 import React from 'react'
 import { InteractiveTerminal } from '../components/InteractiveTerminal'
+import { Terminal } from '../components/Terminal'
 
-export default function HomePage() {
+export default function Home() {
   return (
     <main>
-      <InteractiveTerminal 
-        initialOutput={
-          <>
-            Welcome to THE LIFE OF AB<br/><br/>
-            Type 'help' for available commands<br/>
-          </>
-        }
-      />
+      <Terminal>
+        Welcome to LIFE OF ABIODUN(AB)!<br/><br/>
+        Type 'help' for available commands.
+      </Terminal>
+      <InteractiveTerminal />
     </main>
   )
 } 
