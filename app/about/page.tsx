@@ -27,9 +27,4 @@ export default function AboutPage() {
       </Terminal>
     </main>
   )
-}
-
-export const metadata = {
-  title: 'LIFE OF ABIODUN(AB) - About',
-  description: 'Learn more about Abiodun(AB) and my journey in tech.',
 } 
