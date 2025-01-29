@@ -351,4 +351,18 @@
   :root {
     --text-color: var(--accessible-text);
   }
+}
+
+.command-link {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+  padding: 5px 0;
+  display: inline-block;
+}
+
+@media (max-width: 768px) {
+  .command-link {
+    padding: 8px 0; /* Larger touch target on mobile */
+  }
 } 
