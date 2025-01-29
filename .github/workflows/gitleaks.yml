@@ -1,8 +1,8 @@
-name: Gitleaks
+name: Gitleaks Security Scan
 
 on:
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '0 0 * * *'  # Daily at midnight UTC
   push:
     branches: [ main ]
 
@@ -11,19 +11,17 @@ permissions:
   security-events: write
 
 jobs:
-  gitleaks:
+  gitleaks-scan:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-          path: .
+          fetch-depth: 0  # Full history required for leak detection
 
-      - name: Gitleaks
+      - name: Run Gitleaks
         uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITLEAKS_CONFIG: ${{ github.workspace }}/.gitleaks.toml
         with:
-          config: .gitleaks.toml 
+          config-path: .gitleaks.toml  # Correct input name
+          exit-code: 2
+          report-format: sarif 
