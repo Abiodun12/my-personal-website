@@ -1,8 +1,7 @@
 'use client'
-import React, { useState, useRef, useEffect, useMemo } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { Cursor } from './Cursor'
 import { TerminalLink } from './TerminalLink'
-import { useRouter } from 'next/navigation'
 
 interface Command {
   command: string;
@@ -14,13 +13,16 @@ interface InteractiveTerminalProps {
   prompt?: string;
 }
 
-type CommandHandler = () => React.ReactNode;
+type CommandFunction = () => React.ReactNode | void;
+
+interface CommandMap {
+  [key: string]: CommandFunction;
+}
 
 export function InteractiveTerminal({ 
   initialOutput,
   prompt = "$"
 }: InteractiveTerminalProps) {
-  const router = useRouter();
   const [history, setHistory] = useState<Command[]>([]);
   const [input, setInput] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -28,56 +30,54 @@ export function InteractiveTerminal({
   const [commandHistory, setCommandHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
 
-  const commands = useMemo(() => {
-    return {
-      help: () => (
-        <div className="terminal-help">
-          Available commands:<br/>
-          - help: Show this help<br/>
-          - about: About me<br/>
-          - projects: My projects<br/>
-          - blog: Read my blog<br/>
-          - clear: Clear terminal<br/>
-          - contact: Contact info<br/>
-          - weather: Show weather status
-        </div>
-      ),
-      about: () => {
-        router.push('/about');
-        return 'Redirecting to about page...';
-      },
-      projects: () => {
-        router.push('/projects');
-        return 'Redirecting to projects page...';
-      },
-      blog: () => {
-        router.push('/blog');
-        return 'Redirecting to blog page...';
-      },
-      clear: () => {
-        setHistory([]);
-        return null;
-      },
-      contact: () => (
-        <div className="terminal-contact">
-          CONNECT WITH ME:<br/><br/>
-          <TerminalLink href="https://linkedin.com/in/abiodun-ab-soneye" target="_blank">
-            LINKEDIN
-          </TerminalLink><br/>
-          <TerminalLink href="https://github.com/Abiodun12" target="_blank">
-            GITHUB
-          </TerminalLink><br/>
-          <TerminalLink href="https://docs.google.com/document/d/1kh85MMIonwwWGMQ3kyEpyTTHlMxjWuiW46uZf1jMBJs/edit?usp=sharing" target="_blank">
-            RESUME
-          </TerminalLink><br/>
-          <TerminalLink href="mailto:Soneyebiodun@gmail.com">
-            EMAIL
-          </TerminalLink>
-        </div>
-      ),
-      weather: () => 'Current weather: Sunny 25°C'
-    } as { [key: string]: CommandHandler };
-  }, [router]);
+  const commands: CommandMap = {
+    help: () => (
+      <div className="terminal-help">
+        Available commands:<br/>
+        - help: Show this help<br/>
+        - about: About me<br/>
+        - projects: My projects<br/>
+        - blog: Read my blog<br/>
+        - clear: Clear terminal<br/>
+        - contact: Contact info<br/>
+        - weather: Show weather status
+      </div>
+    ),
+    about: () => {
+      window.location.href = '/about';
+      return 'Redirecting to about page...';
+    },
+    projects: () => {
+      window.location.href = '/projects';
+      return 'Redirecting to projects page...';
+    },
+    blog: () => {
+      window.location.href = '/blog';
+      return 'Redirecting to blog page...';
+    },
+    clear: () => {
+      setHistory([]);
+      return null;
+    },
+    contact: () => (
+      <div className="terminal-contact">
+        CONNECT WITH ME:<br/><br/>
+        <TerminalLink href="https://linkedin.com/in/abiodun-ab-soneye" target="_blank">
+          LINKEDIN
+        </TerminalLink><br/>
+        <TerminalLink href="https://github.com/Abiodun12" target="_blank">
+          GITHUB
+        </TerminalLink><br/>
+        <TerminalLink href="https://docs.google.com/document/d/1kh85MMIonwwWGMQ3kyEpyTTHlMxjWuiW46uZf1jMBJs/edit?usp=sharing" target="_blank">
+          RESUME
+        </TerminalLink><br/>
+        <TerminalLink href="mailto:Soneyebiodun@gmail.com">
+          EMAIL
+        </TerminalLink>
+      </div>
+    ),
+    weather: () => 'Current weather: Sunny 25°C'
+  };
 
   const handleCommand = (cmd: string) => {
     const trimmedCmd = cmd.trim().toLowerCase();
@@ -88,7 +88,8 @@ export function InteractiveTerminal({
     }
 
     if (trimmedCmd in commands) {
-      output = commands[trimmedCmd]();
+      const result = commands[trimmedCmd]();
+      output = result || `Executed: ${trimmedCmd}`;
     } else if (trimmedCmd) {
       output = `Command not found: ${trimmedCmd}. Type 'help' for available commands.`;
     }
