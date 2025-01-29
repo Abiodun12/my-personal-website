@@ -82,7 +82,7 @@ export function InteractiveTerminal({
     contact: () => (
       <div className="terminal-contact">
         CONNECT WITH ME:<br/><br/>
-        <TerminalLink href="https://linkedin.com/in/abiodun-ab-soneye" target="_blank">
+        <TerminalLink href="https://www.linkedin.com/in/abiodun-ab-soneye-1b7a80290/" target="_blank">
           LINKEDIN
         </TerminalLink><br/>
         <TerminalLink href="https://github.com/Abiodun12" target="_blank">

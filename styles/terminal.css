@@ -64,7 +64,7 @@
   overflow-wrap: break-word;
 }
 
-.terminal-link {
+.terminal-link, .terminal-contact .terminal-link {
   color: #00ff00;
   text-decoration: none;
   position: relative;
@@ -76,9 +76,11 @@
   text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
   cursor: pointer;
   display: inline-block;
+  min-height: 24px;
+  line-height: 24px;
 }
 
-.terminal-link:hover {
+.terminal-link:hover, .terminal-contact .terminal-link:hover {
   color: #00ff00;
   text-shadow: 0 0 10px #00ff00,
                0 0 20px #00ff00,
@@ -87,10 +89,10 @@
   background: rgba(0, 255, 0, 0.1);
   border-radius: 4px;
   transform: scale(1.05);
+  text-decoration: none;
 }
 
-/* Add pulsing glow effect */
-.terminal-link::before {
+.terminal-link::before, .terminal-contact .terminal-link::before {
   content: '';
   position: absolute;
   left: 0;
@@ -103,7 +105,7 @@
   transition: transform 0.3s ease;
 }
 
-.terminal-link:hover::before {
+.terminal-link:hover::before, .terminal-contact .terminal-link:hover::before {
   transform: scaleX(1);
 }
 
@@ -114,12 +116,18 @@
   opacity: 0.7;
 }
 
-/* Ensure links are actually clickable */
-.terminal-link {
-  display: inline-block;
-  min-height: 24px;
-  line-height: 24px;
-  cursor: pointer;
+/* Mobile optimization */
+@media (max-width: 768px) {
+  .terminal-link, .terminal-contact .terminal-link {
+    padding: 8px 12px;
+    margin: 4px 0;
+    min-height: 44px; /* Better touch targets */
+  }
+}
+
+/* Remove duplicate styles */
+.terminal-contact-link {
+  display: none; /* Remove old style */
 }
 
 @keyframes pulse {
@@ -358,11 +366,4 @@
   user-select: none;
   padding: 5px 0;
   display: inline-block;
-}
-
-@media (max-width: 768px) {
-  .terminal-link {
-    padding: 8px 12px;
-    margin: 4px 0;
-  }
 } 
