@@ -14,6 +14,11 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
+      - name: Cache Render URL
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/render
+          key: ${{ runner.os }}-render-${{ hashFiles('**/keep-alive.yml') }}
       - name: Send HTTP Request
         run: |
           response=$(curl -s -o /dev/null -w "%{http_code}" https://my-personal-website-t7tw.onrender.com)
@@ -34,3 +39,11 @@ jobs:
       
       - name: Log Time
         run: echo "Health check executed at $(date UTC) UTC" 
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for secrets
+        uses: gitleaks/gitleaks-action@v2
+        with:
+          config-path: .gitleaks.toml 

@@ -21,6 +21,8 @@ var/
 *.egg
 venv/
 .env
+.env.local
+.env.*
 
 # Node
 node_modules/

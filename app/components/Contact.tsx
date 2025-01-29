@@ -2,6 +2,7 @@
 
 import styles from './Contact.module.css'
 import { TerminalLink } from '@/components/TerminalLink'
+import { SOCIAL_LINKS } from '@/config/shared-content'
 
 export default function Contact() {
   return (
@@ -9,25 +10,25 @@ export default function Contact() {
       <h1 className={styles.title}>CONNECT WITH ME</h1>
       <div className={styles.links}>
         <TerminalLink 
-          href="https://linkedin.com/in/abiodun-ab-soneye" 
+          href={SOCIAL_LINKS.LINKEDIN} 
         >
           LINKEDIN
         </TerminalLink>
 
         <TerminalLink 
-          href="https://github.com/Abiodun12"
+          href={SOCIAL_LINKS.GITHUB}
         >
           GITHUB
         </TerminalLink>
 
         <TerminalLink 
-          href="https://docs.google.com/document/d/1kh85MMIonwwWGMQ3kyEpyTTHlMxjWuiW46uZf1jMBJs/edit?usp=sharing"
+          href={SOCIAL_LINKS.RESUME}
         >
           RESUME
         </TerminalLink>
 
         <TerminalLink 
-          href="mailto:Soneyebiodun@gmail.com"
+          href={SOCIAL_LINKS.EMAIL}
         >
           EMAIL
         </TerminalLink>

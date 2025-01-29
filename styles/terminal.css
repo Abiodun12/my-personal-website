@@ -337,4 +337,18 @@
 
 .terminal-contact-link:hover::before {
   left: 100%;
+}
+
+/* Improve contrast ratios */
+:root {
+  --text-color: #00ff00; /* Current neon green */
+  --background-color: #000;
+  /* Add accessible alternative */
+  --accessible-text: #4CAF50; 
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --text-color: var(--accessible-text);
+  }
 } 

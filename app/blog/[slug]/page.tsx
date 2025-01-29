@@ -25,6 +25,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
+export const revalidate = 3600; // Revalidate every hour
+
 export default function BlogPost({ params }: Props) {
   const post = blogPosts.find(p => p.slug === params.slug)
 

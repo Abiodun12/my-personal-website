@@ -27,8 +27,10 @@ export function InteractiveTerminal({
   const [input, setInput] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const terminalRef = useRef<HTMLDivElement>(null);
+  const [commandHistory, setCommandHistory] = useState<string[]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
 
-  const commands: CommandMap = {
+  const commands = React.useMemo(() => ({
     help: () => (
       <>
         Available Commands:<br/>
@@ -99,8 +101,12 @@ export function InteractiveTerminal({
           EMAIL
         </TerminalLink>
       </div>
-    )
-  };
+    ),
+    weather: () => {
+      // Fetch weather API
+      return 'Current weather: ...';
+    }
+  }), []);
 
   const handleCommand = (cmd: string) => {
     const trimmedCmd = cmd.trim().toLowerCase();
@@ -153,6 +159,8 @@ export function InteractiveTerminal({
         {prompt}{' '}
         <input
           ref={inputRef}
+          aria-label="Terminal command input"
+          role="textbox"
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
