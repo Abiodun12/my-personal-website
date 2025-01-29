@@ -17,11 +17,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Full history required for leak detection
+          fetch-depth: 0  # Full clone with .git directory
 
       - name: Run Gitleaks
         uses: gitleaks/gitleaks-action@v2
         env:
           GITLEAKS_CONFIG: '.gitleaks.toml'
           GITLEAKS_PATH: '.'
-          GITLEAKS_ARGS: '--redact --verbose --report-format sarif --report-path results.sarif' 
+          GITLEAKS_ARGS: 'detect --source=. --redact --verbose --exit-code=2 --report-format=sarif' 
