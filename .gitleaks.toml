@@ -3,9 +3,9 @@ title = "gitleaks config"
 [allowlist]
 description = "Allow listed matches"
 paths = [
-    "**/*.test.ts",
-    "**/*.test.tsx",
-    "**/test/**",
+    ".*\\.test\\.ts$",
+    ".*\\.test\\.tsx$",
+    ".*/test/.*",
 ]
 
 [[rules]]
