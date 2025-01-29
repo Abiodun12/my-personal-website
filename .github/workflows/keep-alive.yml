@@ -38,7 +38,7 @@ jobs:
         continue-on-error: true  # Prevent workflow failure if Render is starting up
       
       - name: Log Time
-        run: echo "Health check executed at $(date UTC) UTC" 
+        run: echo "Health check executed at $(date UTC) UTC"
 
   security:
     runs-on: ubuntu-latest
