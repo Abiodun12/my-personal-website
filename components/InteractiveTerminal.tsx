@@ -39,67 +39,27 @@ export function InteractiveTerminal({
       <div className="terminal-help">
         Available Commands:<br/><br/>
         {'>'}  <span 
-          className="command-link"
+          className="terminal-link"
           onClick={() => handleNavigation('/about')}
-          style={{ 
-            color: '#00ff00',
-            cursor: 'pointer',
-            textShadow: '0 0 10px #00ff00',
-            transition: 'all 0.3s ease'
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.textShadow = '0 0 20px #00ff00'}
-          onMouseLeave={(e) => e.currentTarget.style.textShadow = '0 0 10px #00ff00'}
         >ABOUT</span>    : Learn more about me<br/>
         {'>'}  <span 
-          className="command-link"
+          className="terminal-link"
           onClick={() => handleNavigation('/projects')}
-          style={{ 
-            color: '#00ff00',
-            cursor: 'pointer',
-            textShadow: '0 0 10px #00ff00',
-            transition: 'all 0.3s ease'
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.textShadow = '0 0 20px #00ff00'}
-          onMouseLeave={(e) => e.currentTarget.style.textShadow = '0 0 10px #00ff00'}
         >PROJECTS</span> : View my portfolio<br/>
         {'>'}  <span 
-          className="command-link"
+          className="terminal-link"
           onClick={() => handleNavigation('/blog')}
-          style={{ 
-            color: '#00ff00',
-            cursor: 'pointer',
-            textShadow: '0 0 10px #00ff00',
-            transition: 'all 0.3s ease'
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.textShadow = '0 0 20px #00ff00'}
-          onMouseLeave={(e) => e.currentTarget.style.textShadow = '0 0 10px #00ff00'}
         >BLOG</span>     : Read my thoughts<br/>
         {'>'}  <span 
-          className="command-link"
+          className="terminal-link"
           onClick={() => {
             setHistory([]);
             setInput('');
           }}
-          style={{ 
-            color: '#00ff00',
-            cursor: 'pointer',
-            textShadow: '0 0 10px #00ff00',
-            transition: 'all 0.3s ease'
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.textShadow = '0 0 20px #00ff00'}
-          onMouseLeave={(e) => e.currentTarget.style.textShadow = '0 0 10px #00ff00'}
         >CLEAR</span>    : Clear terminal<br/>
         {'>'}  <span 
-          className="command-link"
+          className="terminal-link"
           onClick={() => handleCommand('contact')}
-          style={{ 
-            color: '#00ff00',
-            cursor: 'pointer',
-            textShadow: '0 0 10px #00ff00',
-            transition: 'all 0.3s ease'
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.textShadow = '0 0 20px #00ff00'}
-          onMouseLeave={(e) => e.currentTarget.style.textShadow = '0 0 10px #00ff00'}
         >CONTACT</span>  : How to reach me
       </div>
     ),
