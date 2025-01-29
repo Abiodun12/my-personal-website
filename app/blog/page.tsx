@@ -1,12 +1,23 @@
 'use client'
 
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Terminal } from '../../components/Terminal'
 import { TerminalLink } from '../../components/TerminalLink'
 import { Cursor } from '../../components/Cursor'
 import { blogPosts } from '../../config/blog'
+import { trackPageView } from '@/lib/db'
 
 export default function BlogPage() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const filteredPosts = blogPosts.filter(post => 
+    post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    post.content.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  useEffect(() => {
+    trackPageView(window.location.pathname);
+  }, []);
+
   return (
     <main style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
       <Terminal>
@@ -15,7 +26,7 @@ export default function BlogPage() {
       </Terminal>
 
       <Terminal>
-        {blogPosts.map((post, index) => (
+        {filteredPosts.map((post, index) => (
           <React.Fragment key={post.slug}>
             <div style={{ marginBottom: '1rem' }}>
               <TerminalLink href={`/blog/${post.slug}`}>{post.title}</TerminalLink>
@@ -24,7 +35,7 @@ export default function BlogPage() {
               <br />
               {post.description}
             </div>
-            {index < blogPosts.length - 1 && <br />}
+            {index < filteredPosts.length - 1 && <br />}
           </React.Fragment>
         ))}
       </Terminal>
