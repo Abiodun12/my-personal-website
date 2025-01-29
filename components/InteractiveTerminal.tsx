@@ -19,6 +19,11 @@ interface CommandMap {
   [key: string]: CommandFunction;
 }
 
+// Add type definition for commands
+type TerminalCommands = {
+  [key: string]: () => string | JSX.Element | null;
+};
+
 export function InteractiveTerminal({ 
   initialOutput,
   prompt = "$"
@@ -30,26 +35,18 @@ export function InteractiveTerminal({
   const [commandHistory, setCommandHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
 
-  const commands = React.useMemo(() => ({
+  // Update the commands declaration
+  const commands: TerminalCommands = {
     help: () => (
-      <>
-        Available Commands:<br/>
-        - <TerminalLink href="/about">ABOUT</TerminalLink>: Learn more about me<br/>
-        - <TerminalLink href="/projects">PROJECTS</TerminalLink>: View my portfolio<br/>
-        - <TerminalLink href="/blog">BLOG</TerminalLink>: Read my thoughts<br/>
-        - <TerminalLink 
-            href="#" 
-            onClick={() => handleCommand('clear')}
-          >
-            CLEAR
-          </TerminalLink>: Clear terminal<br/>
-        - <TerminalLink 
-            href="#" 
-            onClick={() => handleCommand('contact')}
-          >
-            CONTACT
-          </TerminalLink>: How to reach me
-      </>
+      <div className="terminal-help">
+        Available commands:<br/>
+        - help: Show this help<br/>
+        - about: About me<br/>
+        - projects: My projects<br/>
+        - blog: Read my blog<br/>
+        - clear: Clear terminal<br/>
+        - contact: Contact info
+      </div>
     ),
     about: () => {
       window.location.href = '/about';
@@ -70,43 +67,21 @@ export function InteractiveTerminal({
     contact: () => (
       <div className="terminal-contact">
         CONNECT WITH ME:<br/><br/>
-        <TerminalLink 
-          href="https://linkedin.com/in/abiodun-ab-soneye" 
-          target="_blank"
-          rel="noopener noreferrer"
-          className="terminal-contact-link"
-        >
+        <TerminalLink href="https://linkedin.com/in/abiodun-ab-soneye" target="_blank">
           LINKEDIN
         </TerminalLink><br/>
-        <TerminalLink 
-          href="https://github.com/Abiodun12" 
-          target="_blank"
-          rel="noopener noreferrer"
-          className="terminal-contact-link"
-        >
+        <TerminalLink href="https://github.com/Abiodun12" target="_blank">
           GITHUB
         </TerminalLink><br/>
-        <TerminalLink 
-          href="https://docs.google.com/document/d/1kh85MMIonwwWGMQ3kyEpyTTHlMxjWuiW46uZf1jMBJs/edit?usp=sharing" 
-          target="_blank"
-          rel="noopener noreferrer"
-          className="terminal-contact-link"
-        >
+        <TerminalLink href="https://docs.google.com/document/d/1kh85MMIonwwWGMQ3kyEpyTTHlMxjWuiW46uZf1jMBJs/edit?usp=sharing" target="_blank">
           RESUME
         </TerminalLink><br/>
-        <TerminalLink 
-          href="mailto:Soneyebiodun@gmail.com"
-          className="terminal-contact-link"
-        >
+        <TerminalLink href="mailto:Soneyebiodun@gmail.com">
           EMAIL
         </TerminalLink>
       </div>
-    ),
-    weather: () => {
-      // Fetch weather API
-      return 'Current weather: ...';
-    }
-  }), []);
+    )
+  };
 
   const handleCommand = (cmd: string) => {
     const trimmedCmd = cmd.trim().toLowerCase();
@@ -114,7 +89,7 @@ export function InteractiveTerminal({
 
     if (trimmedCmd in commands) {
       const result = commands[trimmedCmd]();
-      output = result || `Executing command: ${trimmedCmd}`;
+      output = result || `Executed: ${trimmedCmd}`;
     } else if (trimmedCmd) {
       output = `Command not found: ${trimmedCmd}. Type 'help' for available commands.`;
     }
