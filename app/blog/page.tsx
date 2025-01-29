@@ -5,7 +5,7 @@ import { Terminal } from '../../components/Terminal'
 import { TerminalLink } from '../../components/TerminalLink'
 import { Cursor } from '../../components/Cursor'
 import { blogPosts } from '../../config/blog'
-import { trackPageView } from '@/lib/db'
+import { trackPageView } from '../../lib/db'
 
 export default function BlogPage() {
   const [searchQuery, setSearchQuery] = useState('');
