@@ -34,11 +34,11 @@ export function InteractiveTerminal({
     help: () => (
       <div className="terminal-help">
         Available Commands:<br/><br/>
-        >  <span style={{ color: '#00ff00' }}>ABOUT</span>    : Learn more about me<br/>
-        >  <span style={{ color: '#00ff00' }}>PROJECTS</span> : View my portfolio<br/>
-        >  <span style={{ color: '#00ff00' }}>BLOG</span>     : Read my thoughts<br/>
-        >  <span style={{ color: '#00ff00' }}>CLEAR</span>    : Clear terminal<br/>
-        >  <span style={{ color: '#00ff00' }}>CONTACT</span>  : How to reach me
+        {'>'}  <span style={{ color: '#00ff00' }}>ABOUT</span>    : Learn more about me<br/>
+        {'>'}  <span style={{ color: '#00ff00' }}>PROJECTS</span> : View my portfolio<br/>
+        {'>'}  <span style={{ color: '#00ff00' }}>BLOG</span>     : Read my thoughts<br/>
+        {'>'}  <span style={{ color: '#00ff00' }}>CLEAR</span>    : Clear terminal<br/>
+        {'>'}  <span style={{ color: '#00ff00' }}>CONTACT</span>  : How to reach me
       </div>
     ),
     about: () => {
