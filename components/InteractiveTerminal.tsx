@@ -33,14 +33,12 @@ export function InteractiveTerminal({
   const commands: CommandMap = {
     help: () => (
       <div className="terminal-help">
-        Available commands:<br/>
-        - help: Show this help<br/>
-        - about: About me<br/>
-        - projects: My projects<br/>
-        - blog: Read my blog<br/>
-        - clear: Clear terminal<br/>
-        - contact: Contact info<br/>
-        - weather: Show weather status
+        Available Commands:<br/><br/>
+        >  <span style={{ color: '#00ff00' }}>ABOUT</span>    : Learn more about me<br/>
+        >  <span style={{ color: '#00ff00' }}>PROJECTS</span> : View my portfolio<br/>
+        >  <span style={{ color: '#00ff00' }}>BLOG</span>     : Read my thoughts<br/>
+        >  <span style={{ color: '#00ff00' }}>CLEAR</span>    : Clear terminal<br/>
+        >  <span style={{ color: '#00ff00' }}>CONTACT</span>  : How to reach me
       </div>
     ),
     about: () => {
@@ -75,8 +73,7 @@ export function InteractiveTerminal({
           EMAIL
         </TerminalLink>
       </div>
-    ),
-    weather: () => 'Current weather: Sunny 25°C'
+    )
   };
 
   const handleCommand = (cmd: string) => {
