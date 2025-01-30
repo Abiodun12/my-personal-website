@@ -2,44 +2,24 @@
 # Purpose: Prevents Render free tier from sleeping by sending periodic health checks
 # Runs every 8 minutes to maintain instance availability
 
-name: Keep Render Alive
+name: Keep Alive Check
 
 on:
   schedule:
-    - cron: '*/8 * * * *'  # Runs every 8 minutes
-  workflow_dispatch:  # Allows manual triggering
+    - cron: '0 0 * * *'  # Daily at midnight UTC
 
 jobs:
   keep-alive:
     runs-on: ubuntu-latest
-    
     steps:
-      - name: Cache Render URL
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/render
-          key: ${{ runner.os }}-render-${{ hashFiles('**/keep-alive.yml') }}
-          
-      - name: Send HTTP Request
+      - name: Ping website
         run: |
           response=$(curl -s -o /dev/null -w "%{http_code}" https://my-personal-website-t7tw.onrender.com)
-          if [ $response -eq 200 ]; then
-            echo "Successfully pinged the application"
-          else
-            echo "Received status code: $response"
-            echo "Retrying in 30 seconds..."
-            sleep 30
-            second_response=$(curl -s -o /dev/null -w "%{http_code}" https://my-personal-website-t7tw.onrender.com)
-            if [ $second_response -eq 200 ]; then
-              echo "Retry successful"
-            else
-              echo "Retry failed with status code: $second_response"
-            fi
+          echo "Keep-alive ping returned status: $response"
+          if [ "$response" != "200" ]; then
+            echo "Website is not responding with 200 OK (got $response)"
+            exit 1
           fi
-        continue-on-error: true  # Prevent workflow failure if Render is starting up
-      
-      - name: Log Time
-        run: echo "Health check executed at $(date UTC) UTC"
 
   security:
     runs-on: ubuntu-latest
