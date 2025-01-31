@@ -24,7 +24,13 @@ jobs:
   security:
     runs-on: ubuntu-latest
     steps:
-      - name: Check for secrets
-        uses: gitleaks/gitleaks-action@v2
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
-          config-path: .gitleaks.toml 
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITLEAKS_CONFIG: .gitleaks.toml
+          GITLEAKS_PATH: . 
