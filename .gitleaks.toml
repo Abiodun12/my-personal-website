@@ -9,7 +9,8 @@ paths = [
     "venv/.*",                # Allow top-level venv if present
     "api/python/venv/.*",      # Allow venv nested under api/python
     ".*/\\.next/.*",          # Next.js build output
-    "vercel\\.json$"          # Vercel config file
+    "vercel\\.json$",         # Vercel config file
+    "\\.env\\.example$"        # Environment example file
 ]
 
 regexes = [
@@ -17,7 +18,11 @@ regexes = [
     '''msrest\\.authentication''',  # Azure SDK imports
     '''AZURE_COMPUTER_VISION''',   # Environment variable names (not values)
     '''DEEPSEEK_API''',           # Environment variable names (not values)
-    '''self\\.send_header'''      # HTTP header operations
+    '''self\\.send_header''',      # HTTP header operations
+    '''from msrest\\.''',          # Azure SDK imports
+    '''86400''',                 # Common timeout value
+    '''AZURE_[A-Z_]+''',         # Azure environment variable names
+    '''DEEPSEEK_[A-Z_]+'''       # Deepseek environment variable names
 ]
 
 [[rules]]
