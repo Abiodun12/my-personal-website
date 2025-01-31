@@ -5,7 +5,9 @@ description = "Allow listed matches"
 paths = [
     ".*\\.test\\.ts$",
     ".*\\.test\\.tsx$",
-    ".*/test/.*"
+    ".*/test/.*",
+    "venv/.*",                # Allow top-level venv if present
+    "api/python/venv/.*"       # Allow venv nested under api/python
 ]
 
 [[rules]]
