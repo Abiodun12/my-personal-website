@@ -7,7 +7,17 @@ paths = [
     ".*\\.test\\.tsx$",
     ".*/test/.*",
     "venv/.*",                # Allow top-level venv if present
-    "api/python/venv/.*"       # Allow venv nested under api/python
+    "api/python/venv/.*",      # Allow venv nested under api/python
+    ".*/\\.next/.*",          # Next.js build output
+    "vercel\\.json$"          # Vercel config file
+]
+
+regexes = [
+    '''Access-Control-Allow''',    # CORS headers
+    '''msrest\\.authentication''',  # Azure SDK imports
+    '''AZURE_COMPUTER_VISION''',   # Environment variable names (not values)
+    '''DEEPSEEK_API''',           # Environment variable names (not values)
+    '''self\\.send_header'''      # HTTP header operations
 ]
 
 [[rules]]
