@@ -10,7 +10,10 @@ paths = [
     "api/python/venv/.*",      # Allow venv nested under api/python
     ".*/\\.next/.*",          # Next.js build output
     "vercel\\.json$",         # Vercel config file
-    "\\.env\\.example$"        # Environment example file
+    "\\.env\\.example$",       # Environment example file
+    "app/api/smart-pet-plus/analyze\\.py$",  # Allow specific file
+    "api/analyze\\.py$",                     # Allow specific file
+    "api/python/smart_pet\\.py$"             # Allow specific file
 ]
 
 regexes = [
