@@ -88,30 +88,39 @@ def analyze_image(image_data):
         with open(temp_path, "wb") as f:
             f.write(image_data)
 
-        # Use ImageRecognition instead of MultiModalConversation
-        response = dashscope.ImageRecognition.call(
-            model='image-recognition',
-            image_path=temp_path,
-            api_key=DASHSCOPE_API_KEY
+        # Set up DashScope API base URL
+        dashscope.base_http_api_url = 'https://dashscope-intl.aliyuncs.com/api/v1'
+
+        # Create message for image analysis
+        messages = [
+            {
+                "role": "user",
+                "content": [
+                    {"image": temp_path},
+                    {"text": "What animal or pet do you see in this image? Give me just the name of the animal in one word."}
+                ]
+            }
+        ]
+
+        # Call DashScope API
+        response = dashscope.MultiModalConversation.call(
+            model='qwen-vl-max',
+            api_key=DASHSCOPE_API_KEY,
+            messages=messages
         )
 
         # Clean up temp file
         os.remove(temp_path)
 
         if response.status_code == 200:
-            # Extract the animal name from the response
-            labels = response.output.labels
-            if labels:
-                # Get the first label that matches our animal list
-                animal_words = ["dog", "cat", "bird", "hamster", "rabbit", "fish", "parrot"]
-                for label in labels:
-                    label_name = label.name.lower()
-                    for animal in animal_words:
-                        if animal in label_name:
-                            return animal
-                
-                # If no specific animal found, return the first label
-                return labels[0].name.lower()
+            # Get the animal name from response
+            text = response.output.choices[0].message.content[0]["text"].lower()
+            # Extract just the animal name
+            animal_words = ["dog", "cat", "bird", "hamster", "rabbit", "fish", "parrot"]
+            for animal in animal_words:
+                if animal in text:
+                    return animal
+            return text.split()[0]  # Return first word if no specific animal found
 
         return "animal"
 
