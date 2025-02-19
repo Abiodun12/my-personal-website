@@ -126,8 +126,7 @@ def analyze_image(image_data):
 def generate_story(subject):
     """Generate a concise, engaging story with a fun fact about the subject."""
     try:
-        prompt = f"""Identify the main animal in this image and write a very short story (2-3 sentences) followed by a fun fact. 
-        If unsure, create a generic animal story. Format: [Story] [Fun Fact: ...]"""
+        prompt = f"Write a very short story (2-3 sentences) about a {subject}. Include one fun fact about {subject}. Format: [Story] [Fun Fact: ...]"
 
         headers = {
             "Content-Type": "application/json",
@@ -148,7 +147,8 @@ def generate_story(subject):
         response = requests.post(
             "https://api.deepseek.com/v1/chat/completions",
             headers=headers,
-            json=data
+            json=data,
+            timeout=10  # Added timeout to prevent hanging
         )
         response.raise_for_status()
         story = response.json()["choices"][0]["message"]["content"]
