@@ -5,7 +5,6 @@ import base64
 from dotenv import load_dotenv
 import io
 import requests
-from openai import OpenAI
 import json
 import datetime
 import re
@@ -49,13 +48,6 @@ def analyze_image_route():
         # Analyze image with DashScope
         subject = analyze_image(image_data)
         print(f"Identified subject: {subject}")
-
-        # Validate subject before generating story
-        valid_animals = ["dog", "cat", "bird", "hamster", "rabbit", "fish", 
-                       "parrot", "bee", "turtle", "ferret", "snake"]
-        if subject.lower() not in valid_animals:
-            subject = "animal"
-            print(f"Overriding subject to 'animal' from: {subject}")
 
         # Generate story with DeepSeek
         story = generate_story(subject)
@@ -134,10 +126,6 @@ def analyze_image(image_data):
 def generate_story(subject):
     """Generate a concise, engaging story with a fun fact about the subject."""
     try:
-        # Validate subject
-        if subject.lower() == "animal":
-            subject = "amazing animal"
-            
         prompt = f"""Identify the main animal in this image and write a very short story (2-3 sentences) followed by a fun fact. 
         If unsure, create a generic animal story. Format: [Story] [Fun Fact: ...]"""
 
