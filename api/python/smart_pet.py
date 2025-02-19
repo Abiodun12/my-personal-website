@@ -5,7 +5,7 @@ import base64
 from dotenv import load_dotenv
 import io
 import requests
-from dashscope import ImageRecognition
+import dashscope
 import json
 import datetime
 
