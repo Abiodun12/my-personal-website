@@ -9,6 +9,7 @@ from openai import OpenAI
 import json
 import datetime
 import re
+import dashscope
 
 app = Flask(__name__)
 # Enable CORS for all domains and routes
@@ -90,68 +91,45 @@ def health_check() -> dict:
     })
 
 def analyze_image(image_data):
-    """Analyze image using DashScope Vision API via OpenAI SDK"""
+    """Analyze image using DashScope Vision API"""
     try:
         # Convert image data to base64
         image_base64 = base64.b64encode(image_data).decode('utf-8')
         
-        # Initialize OpenAI client with DashScope settings
-        client = OpenAI(
-            api_key=DASHSCOPE_API_KEY,
-            base_url="https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
-        )
+        # Set up DashScope API base URL
+        dashscope.base_http_api_url = 'https://dashscope-intl.aliyuncs.com/api/v1'
 
         # Create message for image analysis
         messages = [
             {
-                "role": "system",
-                "content": "You are an expert at identifying animals in images. Respond with just the animal name in one word."
-            },
-            {
                 "role": "user",
                 "content": [
-                    {"type": "image", "image_url": f"data:image/jpeg;base64,{image_base64}"},
-                    {"type": "text", "text": "What animal is in this image? Respond with just one word."}
+                    {"image": f"data:image/jpeg;base64,{image_base64}"},
+                    {"text": "What do you see in this image? Describe the main subject in one word."}
                 ]
             }
         ]
 
         print("Calling DashScope API...")
-        response = client.chat.completions.create(
-            model="qwen-vl-max",
-            messages=messages,
-            temperature=0.01  # Low temperature for more consistent responses
+        response = dashscope.MultiModalConversation.call(
+            model='qwen-vl-max',
+            api_key=DASHSCOPE_API_KEY,
+            messages=messages
         )
         
         print(f"API Response: {response}")
 
-        # Extract and validate the animal name
-        if response.choices:
-            text = response.choices[0].message.content.lower().strip()
-            print(f"Raw extracted text: {text}")
-            
-            # Clean and validate the response
-            animal_words = ["dog", "cat", "bird", "hamster", "rabbit", "fish", "parrot", 
-                          "bee", "turtle", "ferret", "snake", "horse", "cow", "pig", 
-                          "chicken", "lion", "tiger", "bear"]
-            
-            # Use regex to find animal names
-            matches = re.findall(r'\b(' + '|'.join(animal_words) + r')\b', text)
-            if matches:
-                animal = matches[0]
-                print(f"Final animal: {animal}")
-                return animal
-            
-            # If no match found, return first word if it looks like an animal
-            first_word = text.split()[0] if text else "animal"
-            if len(first_word) > 2 and not any(char.isdigit() for char in first_word):
-                return first_word
+        if response.status_code == 200:
+            # Extract the subject from response
+            text = response.output.choices[0].message.content[0]["text"].lower().strip()
+            print(f"Identified subject: {text}")
+            return text
 
-        return "animal"
+        return "unknown subject"
 
     except Exception as e:
         print(f"Detailed error in image analysis: {str(e)}")
-        return "animal"
+        return "unknown subject"
 
 def generate_story(subject):
     """Generate a concise, engaging story with a fun fact about the subject."""
