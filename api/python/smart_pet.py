@@ -83,23 +83,19 @@ def health_check() -> dict:
 def analyze_image(image_data):
     """Analyze image using DashScope Vision API"""
     try:
-        # Create temporary file for image
-        temp_path = "temp_image.jpg"
-        with open(temp_path, "wb") as f:
-            f.write(image_data)
-
-        print("Created temporary image file")
-
+        # Convert image data to base64
+        image_base64 = base64.b64encode(image_data).decode('utf-8')
+        
         # Set up DashScope API base URL
         dashscope.base_http_api_url = 'https://dashscope-intl.aliyuncs.com/api/v1'
-        print(f"Using API key: {DASHSCOPE_API_KEY[:10]}...")  # Print first 10 chars of key
+        print(f"Using API key: {DASHSCOPE_API_KEY[:10]}...")
 
         # Create message for image analysis
         messages = [
             {
                 "role": "user",
                 "content": [
-                    {"image": temp_path},
+                    {"image": f"data:image/jpeg;base64,{image_base64}"},
                     {"text": "What animal or pet do you see in this image? Give me just the name of the animal in one word."}
                 ]
             }
@@ -115,14 +111,9 @@ def analyze_image(image_data):
         print(f"API Response status: {response.status_code}")
         print(f"API Response: {response.output}")
 
-        # Clean up temp file
-        os.remove(temp_path)
-
         if response.status_code == 200:
-            # Get the animal name from response
             text = response.output.choices[0].message.content[0]["text"].lower()
             print(f"Extracted text: {text}")
-            # Extract just the animal name
             animal_words = ["dog", "cat", "bird", "hamster", "rabbit", "fish", "parrot"]
             for animal in animal_words:
                 if animal in text:
