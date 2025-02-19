@@ -88,8 +88,11 @@ def analyze_image(image_data):
         with open(temp_path, "wb") as f:
             f.write(image_data)
 
+        print("Created temporary image file")
+
         # Set up DashScope API base URL
         dashscope.base_http_api_url = 'https://dashscope-intl.aliyuncs.com/api/v1'
+        print(f"Using API key: {DASHSCOPE_API_KEY[:10]}...")  # Print first 10 chars of key
 
         # Create message for image analysis
         messages = [
@@ -102,12 +105,15 @@ def analyze_image(image_data):
             }
         ]
 
+        print("Calling DashScope API...")
         # Call DashScope API
         response = dashscope.MultiModalConversation.call(
             model='qwen-vl-max',
             api_key=DASHSCOPE_API_KEY,
             messages=messages
         )
+        print(f"API Response status: {response.status_code}")
+        print(f"API Response: {response.output}")
 
         # Clean up temp file
         os.remove(temp_path)
@@ -115,6 +121,7 @@ def analyze_image(image_data):
         if response.status_code == 200:
             # Get the animal name from response
             text = response.output.choices[0].message.content[0]["text"].lower()
+            print(f"Extracted text: {text}")
             # Extract just the animal name
             animal_words = ["dog", "cat", "bird", "hamster", "rabbit", "fish", "parrot"]
             for animal in animal_words:
@@ -125,7 +132,10 @@ def analyze_image(image_data):
         return "animal"
 
     except Exception as e:
-        print(f"Error in image analysis: {str(e)}")
+        print(f"Detailed error in image analysis: {str(e)}")
+        print(f"Error type: {type(e)}")
+        if hasattr(e, 'response'):
+            print(f"Response content: {e.response.content}")
         return "animal"
 
 def generate_story(subject):
