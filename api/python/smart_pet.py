@@ -88,21 +88,11 @@ def analyze_image(image_data):
         with open(temp_path, "wb") as f:
             f.write(image_data)
 
-        # Call DashScope API using MultiModalConversation for better analysis
-        messages = [
-            {
-                "role": "user",
-                "content": [
-                    {"image": temp_path},
-                    {"text": "What animal or pet do you see in this image? Give me just the name of the animal in one word."}
-                ]
-            }
-        ]
-
-        response = dashscope.MultiModalConversation.call(
-            model='qwen-vl-max',
-            api_key=DASHSCOPE_API_KEY,
-            messages=messages
+        # Use ImageRecognition instead of MultiModalConversation
+        response = dashscope.ImageRecognition.call(
+            model='image-recognition',
+            image_path=temp_path,
+            api_key=DASHSCOPE_API_KEY
         )
 
         # Clean up temp file
@@ -110,17 +100,18 @@ def analyze_image(image_data):
 
         if response.status_code == 200:
             # Extract the animal name from the response
-            description = response.output.choices[0].message.content[0]["text"]
-            # Extract just the animal name using simple text processing
-            animal_words = ["dog", "cat", "bird", "hamster", "rabbit", "fish", "parrot"]
-            description_lower = description.lower()
-            for animal in animal_words:
-                if animal in description_lower:
-                    return animal
-            
-            # If no specific animal found, return generic terms
-            if any(word in description_lower for word in ["pet", "animal"]):
-                return "pet"
+            labels = response.output.labels
+            if labels:
+                # Get the first label that matches our animal list
+                animal_words = ["dog", "cat", "bird", "hamster", "rabbit", "fish", "parrot"]
+                for label in labels:
+                    label_name = label.name.lower()
+                    for animal in animal_words:
+                        if animal in label_name:
+                            return animal
+                
+                # If no specific animal found, return the first label
+                return labels[0].name.lower()
 
         return "animal"
 
