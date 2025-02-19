@@ -3,8 +3,7 @@ import json
 import base64
 import io
 import os
-from azure.cognitiveservices.vision.computervision import ComputerVisionClient
-from msrest.authentication import CognitiveServicesCredentials
+from dashscope import ImageRecognition
 
 class handler(BaseHTTPRequestHandler):
     def do_POST(self):
@@ -13,35 +12,43 @@ class handler(BaseHTTPRequestHandler):
             body = self.rfile.read(content_length)
             data = json.loads(body)
 
-            azure_key = os.environ.get('AZURE_COMPUTER_VISION_API_KEY')
-            azure_endpoint = os.environ.get('AZURE_COMPUTER_VISION_ENDPOINT')
+            dashscope_key = os.environ.get('DASHSCOPE_API_KEY')
             
-            if not azure_key or not azure_endpoint:
-                raise ValueError('Missing Azure credentials')
+            if not dashscope_key:
+                raise ValueError('Missing DashScope API key')
 
             image_data = base64.b64decode(data['image'])
-            image_stream = io.BytesIO(image_data)
             
-            client = ComputerVisionClient(
-                endpoint=azure_endpoint,
-                credentials=CognitiveServicesCredentials(azure_key)
+            # Save temporary file
+            temp_path = "temp_image.jpg"
+            with open(temp_path, "wb") as f:
+                f.write(image_data)
+
+            # Analyze with DashScope
+            response = ImageRecognition.call(
+                model='image-recognition',
+                image_path=temp_path,
+                api_key=dashscope_key
             )
-            
-            analysis = client.analyze_image_in_stream(
-                image_stream,
-                visual_features=['Description']
-            )
+
+            # Clean up
+            os.remove(temp_path)
             
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
             self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
             
-            response = json.dumps({
+            if response.status_code == 200:
+                description = response.output.labels[0].name if response.output.labels else "animal"
+            else:
+                description = "animal"
+
+            response_data = json.dumps({
                 'success': True,
-                'description': analysis.description.captions[0].text
+                'description': description
             })
-            self.wfile.write(response.encode())
+            self.wfile.write(response_data.encode())
             
         except Exception as e:
             self.send_response(500)
@@ -49,8 +56,8 @@ class handler(BaseHTTPRequestHandler):
             self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
             
-            response = json.dumps({
+            response_data = json.dumps({
                 'success': False,
                 'error': str(e)
             })
-            self.wfile.write(response.encode()) 
+            self.wfile.write(response_data.encode()) 

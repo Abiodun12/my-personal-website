@@ -1,13 +1,12 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from azure.cognitiveservices.vision.computervision import ComputerVisionClient
-from azure.cognitiveservices.vision.computervision.models import VisualFeatureTypes
-from msrest.authentication import CognitiveServicesCredentials
 import os
 import base64
 from dotenv import load_dotenv
 import io
 import requests
+from dashscope import ImageRecognition
+import json
 import datetime
 
 app = Flask(__name__)
@@ -18,16 +17,9 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 load_dotenv()
 
 # API credentials
-AZURE_API_KEY = os.getenv('AZURE_COMPUTER_VISION_API_KEY')
-AZURE_ENDPOINT = os.getenv('AZURE_COMPUTER_VISION_ENDPOINT')
+DASHSCOPE_API_KEY = os.getenv('DASHSCOPE_API_KEY')
 DEEPSEEK_API_KEY = os.getenv('DEEPSEEK_API_KEY')
 DEEPSEEK_MODEL = "deepseek-chat"
-
-# Initialize Azure Computer Vision Client
-cv_client = ComputerVisionClient(
-    AZURE_ENDPOINT,
-    CognitiveServicesCredentials(AZURE_API_KEY)
-)
 
 @app.route('/')
 def home():
@@ -42,17 +34,17 @@ def analyze_image_route():
         return response
 
     try:
-        print("Received request")  # Debug log
+        print("Received request")
         data = request.get_json()
         
         if not data or 'image' not in data:
-            print("No image in request")  # Debug log
+            print("No image in request")
             return jsonify({'error': 'No image found in request'}), 400
 
         # Decode base64 image
         image_data = base64.b64decode(data['image'])
         
-        # Analyze image with Azure
+        # Analyze image with DashScope
         subject = analyze_image(image_data)
         print(f"Identified subject: {subject}")
 
@@ -67,7 +59,7 @@ def analyze_image_route():
         })
 
     except Exception as e:
-        print(f"Error: {str(e)}")  # Debug log
+        print(f"Error: {str(e)}")
         return jsonify({
             'success': False,
             'error': str(e)
@@ -89,38 +81,52 @@ def health_check() -> dict:
     })
 
 def analyze_image(image_data):
-    """Analyze image using Azure Computer Vision"""
-    image_stream = io.BytesIO(image_data)
+    """Analyze image using DashScope Vision API"""
+    try:
+        # Create temporary file for image
+        temp_path = "temp_image.jpg"
+        with open(temp_path, "wb") as f:
+            f.write(image_data)
 
-    # Analyze with multiple feature types
-    analysis = cv_client.analyze_image_in_stream(
-        image_stream,
-        visual_features=[VisualFeatureTypes.objects, VisualFeatureTypes.description, VisualFeatureTypes.tags]
-    )
+        # Call DashScope API using MultiModalConversation for better analysis
+        messages = [
+            {
+                "role": "user",
+                "content": [
+                    {"image": temp_path},
+                    {"text": "What animal or pet do you see in this image? Give me just the name of the animal in one word."}
+                ]
+            }
+        ]
 
-    # Check objects first
-    if analysis.objects:
-        sorted_objects = sorted(
-            analysis.objects,
-            key=lambda obj: (obj.rectangle.w * obj.rectangle.h),
-            reverse=True
+        response = dashscope.MultiModalConversation.call(
+            model='qwen-vl-max',
+            api_key=DASHSCOPE_API_KEY,
+            messages=messages
         )
-        for obj in sorted_objects:
-            if obj.object_property.lower() not in ["person", "human face", "grass", "indoor", "outdoor"]:
-                return obj.object_property.lower()
 
-    # Check description caption
-    if analysis.description and analysis.description.captions:
-        return analysis.description.captions[0].text.lower()
+        # Clean up temp file
+        os.remove(temp_path)
 
-    # Check tags
-    if analysis.tags:
-        sorted_tags = sorted(analysis.tags, key=lambda t: t.confidence, reverse=True)
-        for tag in sorted_tags:
-            if tag.name.lower() not in ["person", "human", "grass", "indoor", "outdoor"]:
-                return tag.name.lower()
+        if response.status_code == 200:
+            # Extract the animal name from the response
+            description = response.output.choices[0].message.content[0]["text"]
+            # Extract just the animal name using simple text processing
+            animal_words = ["dog", "cat", "bird", "hamster", "rabbit", "fish", "parrot"]
+            description_lower = description.lower()
+            for animal in animal_words:
+                if animal in description_lower:
+                    return animal
+            
+            # If no specific animal found, return generic terms
+            if any(word in description_lower for word in ["pet", "animal"]):
+                return "pet"
 
-    return "animal"
+        return "animal"
+
+    except Exception as e:
+        print(f"Error in image analysis: {str(e)}")
+        return "animal"
 
 def generate_story(subject):
     """Generate a concise, engaging story with a fun fact about the subject."""
