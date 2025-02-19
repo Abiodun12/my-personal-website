@@ -8,6 +8,7 @@ import requests
 import dashscope
 import json
 import datetime
+import re
 
 app = Flask(__name__)
 # Enable CORS for all domains and routes
@@ -48,6 +49,13 @@ def analyze_image_route():
         subject = analyze_image(image_data)
         print(f"Identified subject: {subject}")
 
+        # Validate subject before generating story
+        valid_animals = ["dog", "cat", "bird", "hamster", "rabbit", "fish", 
+                       "parrot", "bee", "turtle", "ferret", "snake"]
+        if subject.lower() not in valid_animals:
+            subject = "animal"
+            print(f"Overriding subject to 'animal' from: {subject}")
+
         # Generate story with DeepSeek
         story = generate_story(subject)
         print(f"Generated story about: {subject}")
@@ -59,10 +67,11 @@ def analyze_image_route():
         })
 
     except Exception as e:
-        print(f"Error: {str(e)}")
+        print(f"Full error: {str(e)}")
         return jsonify({
             'success': False,
-            'error': str(e)
+            'error': 'An error occurred processing your request',
+            'details': str(e)
         }), 500
 
 @app.route('/health', methods=['GET'])
@@ -102,57 +111,66 @@ def analyze_image(image_data):
         ]
 
         print("Calling DashScope API...")
-        # Call DashScope API
         response = dashscope.MultiModalConversation.call(
             model='qwen-vl-max',
             api_key=DASHSCOPE_API_KEY,
             messages=messages
         )
+        
         print(f"API Response status: {response.status_code}")
         print(f"API Response: {response.output}")
 
         if response.status_code == 200:
-            text = response.output.choices[0].message.content[0]["text"].lower()
-            print(f"Extracted text: {text}")
-            animal_words = ["dog", "cat", "bird", "hamster", "rabbit", "fish", "parrot"]
-            for animal in animal_words:
-                if animal in text:
-                    return animal
-            return text.split()[0]  # Return first word if no specific animal found
+            # Improved text extraction and validation
+            text = response.output.choices[0].message.content[0]["text"].lower().strip()
+            print(f"Raw extracted text: {text}")
+            
+            # Clean and validate the response
+            animal = "animal"  # Default value
+            if text and text != "none":
+                # Use regex to find animal names
+                matches = re.findall(r'\b(dog|cat|bird|hamster|rabbit|fish|parrot|bee|turtle|ferret|snake|horse|cow|pig|chicken|lion|tiger|bear)\b', text)
+                if matches:
+                    animal = matches[0]
+                else:
+                    # Take first word if no matches
+                    animal = text.split()[0] if text else "animal"
+            
+            print(f"Final animal: {animal}")
+            return animal
 
         return "animal"
 
     except Exception as e:
         print(f"Detailed error in image analysis: {str(e)}")
-        print(f"Error type: {type(e)}")
-        if hasattr(e, 'response'):
-            print(f"Response content: {e.response.content}")
         return "animal"
 
 def generate_story(subject):
     """Generate a concise, engaging story with a fun fact about the subject."""
-    
-    prompt = f"""Write a very short, fun, and engaging story (max 2-4 sentences) about {subject}, 
-    followed by an interesting fun fact. Make it heartwarming and attention-grabbing. 
-    Format: [Story] [Fun Fact: your fact here]"""
-
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {DEEPSEEK_API_KEY}"
-    }
-
-    data = {
-        "model": DEEPSEEK_MODEL,
-        "messages": [
-            {"role": "system", "content": "You are a creative storyteller who specializes in short, engaging pet and animal stories with interesting facts. Keep stories brief and fun."},
-            {"role": "user", "content": prompt}
-        ],
-        "temperature": 1.5,
-        "max_tokens": 100,  # Reduced for shorter stories
-        "stream": False
-    }
-
     try:
+        # Validate subject
+        if subject.lower() == "animal":
+            subject = "amazing animal"
+            
+        prompt = f"""Identify the main animal in this image and write a very short story (2-3 sentences) followed by a fun fact. 
+        If unsure, create a generic animal story. Format: [Story] [Fun Fact: ...]"""
+
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {DEEPSEEK_API_KEY}"
+        }
+
+        data = {
+            "model": DEEPSEEK_MODEL,
+            "messages": [
+                {"role": "system", "content": "You are a creative storyteller who specializes in short, engaging pet and animal stories with interesting facts. Keep stories brief and fun."},
+                {"role": "user", "content": prompt}
+            ],
+            "temperature": 1.5,
+            "max_tokens": 100,  # Reduced for shorter stories
+            "stream": False
+        }
+
         response = requests.post(
             "https://api.deepseek.com/v1/chat/completions",
             headers=headers,
