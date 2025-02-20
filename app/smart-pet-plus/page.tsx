@@ -119,19 +119,20 @@ export default function SmartPetPlus() {
           </div>
         )}
 
-        {/* Debug output with more details */}
+        {/* Debug output */}
         <div className={styles.debug}>
-          <p>Image URL: {image || 'Not set'}</p>
+          <p>Current State:</p>
+          <p>Image: {image ? '✓' : '✗'}</p>
           <p>Subject: {subject || 'Not set'}</p>
           <p>Story: {story || 'Not set'}</p>
           <p>Error: {error || 'None'}</p>
           <p>Loading: {loading.toString()}</p>
         </div>
 
-        {/* Conditional rendering with more explicit check */}
-        {(image && subject && story) ? (
+        {/* Story section */}
+        {image && subject && story && (
           <div className={styles.story}>
-            <img src={image} alt="Uploaded pet" />
+            <img src={image} alt={`Uploaded ${subject}`} />
             <div className={styles.storyContent}>
               <div>
                 <h3>Analysis Result:</h3>
@@ -142,13 +143,6 @@ export default function SmartPetPlus() {
                 <p>{story}</p>
               </div>
             </div>
-          </div>
-        ) : (
-          <div className={styles.debug}>
-            <p>Waiting for all content to be ready...</p>
-            <p>Image: {image ? '✓' : '✗'}</p>
-            <p>Subject: {subject ? '✓' : '✗'}</p>
-            <p>Story: {story ? '✓' : '✗'}</p>
           </div>
         )}
       </div>

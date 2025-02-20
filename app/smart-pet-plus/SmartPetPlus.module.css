@@ -25,12 +25,13 @@
 }
 
 .content {
-  background: var(--background-color);
+  background: var(--background-color, #000000);
   padding: clamp(1rem, 3vw, 2rem);
   border-radius: 8px;
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  color: var(--text-color, #00ff00);
 }
 
 .form {
@@ -101,13 +102,13 @@
 
 .story {
   margin-top: 2rem;
+  padding: 1rem;
+  background: rgba(0, 255, 0, 0.05);
+  border: 1px solid var(--accent-color, #00ff00);
+  border-radius: 8px;
   display: grid;
   grid-template-columns: 1fr;
   gap: 2rem;
-  background: rgba(0, 255, 0, 0.05);
-  padding: 1rem;
-  border-radius: 8px;
-  border: 1px solid var(--accent-color, #00ff00);
 }
 
 .story img {
