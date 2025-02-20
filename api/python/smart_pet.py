@@ -131,8 +131,9 @@ def analyze_image(image_data):
             print("Got successful response from DashScope")  # Debug log
             subject = response.output.choices[0].message.content[0].get('text', '').strip()
             print(f"Extracted subject: {subject}")  # Debug log
-            # Clean up the subject to get just the main noun
-            subject = subject.split()[0] if subject else "animal"
+            
+            # Keep the full subject name instead of just the first word
+            subject = subject if subject else "animal"
             
             result = {
                 "success": True,
@@ -150,7 +151,7 @@ def analyze_image(image_data):
         print(f"Error in analyze_image: {str(e)}")
         return {
             "success": False,
-            "error": str(e),  # Include the actual error message
+            "error": str(e),
             "result": None
         }
 
