@@ -29,9 +29,9 @@ def home():
 
 @app.route('/api/analyze', methods=['POST', 'OPTIONS'])
 def analyze_image_route():
-    response = jsonify({'status': 'ok'})
-    response.headers.add('Access-Control-Allow-Methods', 'POST')
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
+        response = jsonify({'status': 'ok'})
+        response.headers.add('Access-Control-Allow-Methods', 'POST')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
     response.headers.add('Access-Control-Allow-Origin', '*')
     
     if request.method == 'OPTIONS':
@@ -59,7 +59,7 @@ def analyze_image_route():
 
         # Decode base64 image
         try:
-            image_data = base64.b64decode(data['image'])
+        image_data = base64.b64decode(data['image'])
         except Exception as e:
             return jsonify({
                 'success': False,
@@ -70,8 +70,8 @@ def analyze_image_route():
 
         # Analyze image
         try:
-            subject = analyze_image(image_data)
-            story = generate_story(subject)
+        subject = analyze_image(image_data)
+        story = generate_story(subject)
         except Exception as e:
             print(f"API Error: {str(e)}")
             return jsonify({
@@ -204,9 +204,7 @@ def analyze_image(image_data):
 def generate_story(subject):
     """Generate a story about the identified subject."""
     try:
-        # Create a more flexible prompt based on the subject
-        prompt = f"""Write a very short story (2-3 sentences) about this {subject}. 
-        Include one interesting fact. Format: [Story] [Fun Fact: ...]"""
+        prompt = f"Write a very short story (2-3 sentences) about this {subject}. Include one interesting fact. Format: [Story] [Fun Fact: ...]"
 
         headers = {
             "Content-Type": "application/json",
@@ -217,48 +215,39 @@ def generate_story(subject):
             "model": DEEPSEEK_MODEL,
             "messages": [
                 {
-                    "role": "system", 
-                    "content": "You are a creative storyteller who specializes in engaging stories with interesting facts."
+                    "role": "system",
+                    "content": "You are a creative storyteller. Always respond in this format: [Story] ... [Fun Fact: ...]"
                 },
                 {"role": "user", "content": prompt}
             ],
-            "temperature": 1.2,
+            "temperature": 0.7,  # Lower temperature for more consistent formatting
             "max_tokens": 150,
             "stream": False
         }
 
-        # Add retry logic for DeepSeek API
-        max_retries = 3
-        for attempt in range(max_retries):
-            try:
-                response = requests.post(
-                    "https://api.deepseek.com/v1/chat/completions",
-                    headers=headers,
-                    json=data,
-                    timeout=15  # Increased timeout
-                )
-                
-                response.raise_for_status()
-                story = response.json()["choices"][0]["message"]["content"]
-                return story
+        response = requests.post(
+            "https://api.deepseek.com/v1/chat/completions",
+            headers=headers,
+            json=data,
+            timeout=10
+        )
 
-            except requests.exceptions.Timeout:
-                print(f"DeepSeek API timeout, attempt {attempt + 1} of {max_retries}")
-                if attempt < max_retries - 1:
-                    time.sleep(2)  # Wait 2 seconds before retrying
-                    continue
-                raise
-            except Exception as e:
-                print(f"DeepSeek API error: {str(e)}")
-                if attempt < max_retries - 1:
-                    time.sleep(2)
-                    continue
-                raise
+        if response.status_code == 200:
+            story = response.json()["choices"][0]["message"]["content"]
+            # Ensure story has correct format
+            if not story.startswith("[Story]"):
+                story = f"[Story] {story}"
+            if "[Fun Fact:" not in story:
+                story = f"{story} [Fun Fact: {subject}s are fascinating creatures!]"
+            return story
+        else:
+            # Fallback story with guaranteed format
+            return f"[Story] A wonderful {subject} brought joy to everyone today. [Fun Fact: Every {subject} has unique characteristics!]"
 
     except Exception as e:
         print(f"Story generation error: {str(e)}")
-        # Return a properly formatted fallback story
-        return f"[Story] A majestic {subject} caught everyone's attention today. Its unique characteristics made it stand out. [Fun Fact: Every {subject} has its own special traits that make them one-of-a-kind!]"
+        # Fallback story with guaranteed format
+        return f"[Story] A wonderful {subject} brought joy to everyone today. [Fun Fact: Every {subject} has unique characteristics!]"
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 10000))
