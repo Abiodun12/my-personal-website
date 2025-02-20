@@ -40,8 +40,12 @@ def analyze_image_route():
         data = request.get_json()
         
         if not data or 'image' not in data:
-            print("No image in request")
-            return jsonify({'error': 'No image found in request'}), 400
+            return jsonify({
+                'success': False,
+                'error': 'No image found in request',
+                'subject': 'unknown',
+                'story': '[Story] No image was provided. [Fun Fact: Images help AI understand what you want to know about!]'
+            }), 400
 
         # Decode base64 image
         image_data = base64.b64decode(data['image'])
@@ -61,11 +65,12 @@ def analyze_image_route():
         })
 
     except Exception as e:
-        print(f"Full error: {str(e)}")
+        print(f"Error in route: {str(e)}")
         return jsonify({
             'success': False,
-            'error': 'An error occurred processing your request',
-            'details': str(e)
+            'error': str(e),
+            'subject': 'unknown',
+            'story': '[Story] Something went wrong, but every error is a learning opportunity! [Fun Fact: Even AI sometimes needs a second try to get things right!]'
         }), 500
 
 @app.route('/health', methods=['GET'])
