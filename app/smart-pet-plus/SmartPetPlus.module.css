@@ -124,7 +124,7 @@
 .storyContent {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.5rem;
   color: var(--text-color, #00ff00);
 }
 
@@ -136,8 +136,15 @@
 
 .storyContent p {
   font-size: clamp(0.9rem, 2vw, 1rem);
-  line-height: 1.6;
+  line-height: 1.8;
   opacity: 0.9;
+  white-space: pre-wrap;
+}
+
+.storyContent strong {
+  color: var(--accent-color, #00ff00);
+  display: block;
+  margin-bottom: 0.5rem;
 }
 
 @media (min-width: 768px) {

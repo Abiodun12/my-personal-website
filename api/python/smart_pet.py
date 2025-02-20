@@ -103,11 +103,8 @@ def health_check() -> dict:
 def analyze_image(image_data):
     """Analyze image using DashScope MultiModal API"""
     try:
-        print("Starting image analysis...")  # Debug log
-        
-        # Convert image data to base64
+        print("Starting image analysis...")
         image_base64 = base64.b64encode(image_data).decode('utf-8')
-        print("Image converted to base64")  # Debug log
         
         messages = [
             {
@@ -119,30 +116,27 @@ def analyze_image(image_data):
             }
         ]
 
-        print("Calling DashScope API...")  # Debug log
         response = MultiModalConversation.call(
             model='qwen-vl-plus',
             messages=messages,
             api_key=os.getenv('DASHSCOPE_API_KEY')
         )
-        print(f"DashScope API Response: {response}")  # Debug log
 
         if response.status_code == 200:
-            print("Got successful response from DashScope")  # Debug log
             subject = response.output.choices[0].message.content[0].get('text', '').strip()
-            print(f"Extracted subject: {subject}")  # Debug log
+            print(f"Extracted subject: {subject}")
             
-            # Keep the full subject name instead of just the first word
-            subject = subject if subject else "animal"
+            # Generate a story for the subject
+            story = generate_story(subject)
             
             result = {
                 "success": True,
                 "result": {
                     "subject": subject,
-                    "story": f"A wonderful {subject} brought joy to everyone today. Every {subject} has unique characteristics!"
+                    "story": story
                 }
             }
-            print(f"Returning result: {result}")  # Debug log
+            print(f"Returning result: {result}")
             return result
         else:
             raise Exception(f"DashScope API error: {response.message}")
@@ -156,9 +150,9 @@ def analyze_image(image_data):
         }
 
 def generate_story(subject):
-    """Generate a story about the identified subject."""
+    """Generate a creative story about the identified subject."""
     try:
-        prompt = f"Write a very short story (2-3 sentences) about this {subject}. Include one interesting fact. Format: [Story] [Fun Fact: ...]"
+        prompt = f"Write a short story about a {subject}. Include a fun fact. Format: [Story] ... [Fun Fact: ...]"
 
         headers = {
             "Content-Type": "application/json",
@@ -170,13 +164,12 @@ def generate_story(subject):
             "messages": [
                 {
                     "role": "system",
-                    "content": "You are a creative storyteller. Always respond in this format: [Story] ... [Fun Fact: ...]"
+                    "content": "You are a creative storyteller. Write engaging stories about animals."
                 },
                 {"role": "user", "content": prompt}
             ],
-            "temperature": 0.7,  # Lower temperature for more consistent formatting
-            "max_tokens": 150,
-            "stream": False
+            "temperature": 0.7,
+            "max_tokens": 150
         }
 
         response = requests.post(
@@ -187,21 +180,13 @@ def generate_story(subject):
         )
 
         if response.status_code == 200:
-            story = response.json()["choices"][0]["message"]["content"]
-            # Ensure story has correct format
-            if not story.startswith("[Story]"):
-                story = f"[Story] {story}"
-            if "[Fun Fact:" not in story:
-                story = f"{story} [Fun Fact: {subject}s are fascinating creatures!]"
-            return story
+            return response.json()["choices"][0]["message"]["content"]
         else:
-            # Fallback story with guaranteed format
-            return f"[Story] A wonderful {subject} brought joy to everyone today. [Fun Fact: Every {subject} has unique characteristics!]"
+            return f"[Story] A playful {subject} brought joy to everyone with their unique personality. [Fun Fact: {subject}s have amazing abilities!]"
 
     except Exception as e:
         print(f"Story generation error: {str(e)}")
-        # Fallback story with guaranteed format
-        return f"[Story] A wonderful {subject} brought joy to everyone today. [Fun Fact: Every {subject} has unique characteristics!]"
+        return f"[Story] A playful {subject} brought joy to everyone with their unique personality. [Fun Fact: {subject}s have amazing abilities!]"
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 10000))
