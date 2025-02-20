@@ -63,21 +63,9 @@ def analyze_image_route():
                 }
             }, 400)
 
-        # Decode base64 image
+        # Process image silently
         try:
             image_data = base64.b64decode(data['image'])
-        except Exception as e:
-            return create_response({
-                'success': False,
-                'error': 'Invalid image data',
-                'result': {
-                    'subject': '',
-                    'story': ''
-                }
-            }, 400)
-
-        # Analyze image and generate story
-        try:
             subject = analyze_image(image_data)
             story = generate_story(subject)
             
@@ -91,7 +79,6 @@ def analyze_image_route():
             })
 
         except Exception as e:
-            print(f"API Error: {str(e)}")
             return create_response({
                 'success': False,
                 'error': 'Error processing image',
@@ -102,7 +89,6 @@ def analyze_image_route():
             }, 500)
 
     except Exception as e:
-        print(f"Server Error: {str(e)}")
         return create_response({
             'success': False,
             'error': 'Server error',
@@ -148,13 +134,11 @@ def analyze_image(image_data):
                     )
                     
                     if response.status_code == 429:  # Rate limit error
-                        print(f"Rate limit hit, attempt {attempt + 1} of {max_retries}")
                         if attempt < max_retries - 1:
                             time.sleep(delay)
                             continue
                     return response
                 except Exception as e:
-                    print(f"API call error: {str(e)}")
                     if attempt < max_retries - 1:
                         time.sleep(delay)
                         continue
@@ -172,14 +156,12 @@ def analyze_image(image_data):
             }
         ]
 
-        print("Checking if image contains an animal...")
         response = call_api_with_retry(messages)
         
         if response and response.status_code == 200:
             is_animal = 'yes' in response.output.choices[0].message.content[0]["text"].lower()
             
             if is_animal:
-                # If it's an animal, ask for specific breed identification
                 messages = [
                     {
                         "role": "user",
@@ -200,19 +182,16 @@ def analyze_image(image_data):
                     }
                 ]
 
-            print("Getting detailed identification...")
             response = call_api_with_retry(messages)
             
             if response and response.status_code == 200:
                 text = response.output.choices[0].message.content[0]["text"].lower().strip()
                 text = text.rstrip('.')
-                print(f"Identified subject: {text}")
                 return text
 
         return "unidentified object"
 
     except Exception as e:
-        print(f"Detailed error in image analysis: {str(e)}")
         return "unidentified object"
 
 def generate_story(subject):
