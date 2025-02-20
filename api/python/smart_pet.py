@@ -9,6 +9,7 @@ import json
 import datetime
 import re
 import dashscope
+import time
 
 app = Flask(__name__)
 # Enable CORS for all domains and routes
@@ -91,7 +92,32 @@ def analyze_image(image_data):
         # Set up DashScope API base URL
         dashscope.base_http_api_url = 'https://dashscope-intl.aliyuncs.com/api/v1'
 
-        # First, determine if it's an animal
+        def call_api_with_retry(messages, max_retries=3, delay=2):
+            """Helper function to call API with retry logic"""
+            for attempt in range(max_retries):
+                try:
+                    response = dashscope.MultiModalConversation.call(
+                        model='qwen-vl-max',
+                        api_key=DASHSCOPE_API_KEY,
+                        messages=messages,
+                        result_format='message'
+                    )
+                    
+                    if response.status_code == 429:  # Rate limit error
+                        print(f"Rate limit hit, attempt {attempt + 1} of {max_retries}")
+                        if attempt < max_retries - 1:
+                            time.sleep(delay)
+                            continue
+                    return response
+                except Exception as e:
+                    print(f"API call error: {str(e)}")
+                    if attempt < max_retries - 1:
+                        time.sleep(delay)
+                        continue
+                    raise
+            return None
+
+        # First check if it's an animal
         messages = [
             {
                 "role": "user",
@@ -103,14 +129,9 @@ def analyze_image(image_data):
         ]
 
         print("Checking if image contains an animal...")
-        response = dashscope.MultiModalConversation.call(
-            model='qwen-vl-max',
-            api_key=DASHSCOPE_API_KEY,
-            messages=messages,
-            result_format='message'
-        )
-
-        if response.status_code == 200:
+        response = call_api_with_retry(messages)
+        
+        if response and response.status_code == 200:
             is_animal = 'yes' in response.output.choices[0].message.content[0]["text"].lower()
             
             if is_animal:
@@ -125,7 +146,6 @@ def analyze_image(image_data):
                     }
                 ]
             else:
-                # If not an animal, ask for general object identification
                 messages = [
                     {
                         "role": "user",
@@ -137,16 +157,9 @@ def analyze_image(image_data):
                 ]
 
             print("Getting detailed identification...")
-            response = dashscope.MultiModalConversation.call(
-                model='qwen-vl-max',
-                api_key=DASHSCOPE_API_KEY,
-                messages=messages,
-                result_format='message'
-            )
+            response = call_api_with_retry(messages)
             
-            print(f"API Response: {response}")
-
-            if response.status_code == 200:
+            if response and response.status_code == 200:
                 text = response.output.choices[0].message.content[0]["text"].lower().strip()
                 text = text.rstrip('.')
                 print(f"Identified subject: {text}")
