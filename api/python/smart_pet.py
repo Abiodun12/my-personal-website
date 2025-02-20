@@ -192,25 +192,43 @@ def generate_story(subject):
                 },
                 {"role": "user", "content": prompt}
             ],
-            "temperature": 1.2,  # Increased for more creative stories
+            "temperature": 1.2,
             "max_tokens": 150,
             "stream": False
         }
 
-        response = requests.post(
-            "https://api.deepseek.com/v1/chat/completions",
-            headers=headers,
-            json=data,
-            timeout=10
-        )
-        
-        response.raise_for_status()
-        story = response.json()["choices"][0]["message"]["content"]
-        return story
+        # Add retry logic for DeepSeek API
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                response = requests.post(
+                    "https://api.deepseek.com/v1/chat/completions",
+                    headers=headers,
+                    json=data,
+                    timeout=15  # Increased timeout
+                )
+                
+                response.raise_for_status()
+                story = response.json()["choices"][0]["message"]["content"]
+                return story
+
+            except requests.exceptions.Timeout:
+                print(f"DeepSeek API timeout, attempt {attempt + 1} of {max_retries}")
+                if attempt < max_retries - 1:
+                    time.sleep(2)  # Wait 2 seconds before retrying
+                    continue
+                raise
+            except Exception as e:
+                print(f"DeepSeek API error: {str(e)}")
+                if attempt < max_retries - 1:
+                    time.sleep(2)
+                    continue
+                raise
 
     except Exception as e:
-        print(f"DeepSeek API error: {str(e)}")
-        return f"A fascinating {subject} caught everyone's attention today. Its unique characteristics made it stand out. Fun Fact: Every {subject} has its own special story to tell!"
+        print(f"Story generation error: {str(e)}")
+        # Return a properly formatted fallback story
+        return f"[Story] A majestic {subject} caught everyone's attention today. Its unique characteristics made it stand out. [Fun Fact: Every {subject} has its own special traits that make them one-of-a-kind!]"
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 10000))
