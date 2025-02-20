@@ -14,6 +14,10 @@ export default function SmartPetPlus() {
     e.preventDefault()
     setLoading(true)
     setError(null)
+    // Reset previous results
+    setImage(null)
+    setSubject(null)
+    setStory(null)
     
     const formData = new FormData(e.currentTarget)
     const file = formData.get('uploaded-file') as File
@@ -39,19 +43,27 @@ export default function SmartPetPlus() {
       }
       
       if (data.error) {
-        console.error('Error from server:', data.error) // Debug log
+        console.error('Error from server:', data.error)
         setError(data.error)
       } else if (!data.success) {
-        console.error('Request not successful:', data) // Debug log
+        console.error('Request not successful:', data)
         setError('Failed to process image')
       } else if (!data.result) {
-        console.error('No result in response:', data) // Debug log
+        console.error('No result in response:', data)
         setError('No analysis result received')
       } else {
-        console.log('Setting results:', data.result) // Debug log
-        setImage(URL.createObjectURL(file))
+        console.log('Setting results:', data.result)
+        const imageUrl = URL.createObjectURL(file)
+        setImage(imageUrl)
         setSubject(data.result.subject)
         setStory(data.result.story)
+        
+        // Verify states were set
+        console.log('States after setting:', {
+          imageUrl,
+          subject: data.result.subject,
+          story: data.result.story
+        })
       }
     } catch (err) {
       console.error('Error details:', err)
@@ -97,6 +109,13 @@ export default function SmartPetPlus() {
             Analyzing your image...
           </div>
         )}
+
+        {/* Debug output */}
+        <div className={styles.debug}>
+          <p>Image: {image ? 'Set' : 'Not set'}</p>
+          <p>Subject: {subject || 'Not set'}</p>
+          <p>Story: {story || 'Not set'}</p>
+        </div>
 
         {image && subject && story && (
           <div className={styles.story}>
