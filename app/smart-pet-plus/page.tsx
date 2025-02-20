@@ -25,26 +25,33 @@ export default function SmartPetPlus() {
     }
     
     try {
+      console.log('Submitting image...') // Debug log
       const response = await fetch('/api/smart-pet-plus', {
         method: 'POST',
         body: formData,
       })
       
       const data = await response.json()
-      console.log('Response data:', data)
+      console.log('Response data:', data) // Debug log
       
       if (!response.ok) {
         throw new Error(data.error || 'Server error')
       }
       
       if (data.error) {
+        console.error('Error from server:', data.error) // Debug log
         setError(data.error)
       } else if (!data.success) {
+        console.error('Request not successful:', data) // Debug log
         setError('Failed to process image')
+      } else if (!data.result) {
+        console.error('No result in response:', data) // Debug log
+        setError('No analysis result received')
       } else {
+        console.log('Setting results:', data.result) // Debug log
         setImage(URL.createObjectURL(file))
-        setSubject(data.result?.subject || '')
-        setStory(data.result?.story || '')
+        setSubject(data.result.subject)
+        setStory(data.result.story)
       }
     } catch (err) {
       console.error('Error details:', err)

@@ -19,6 +19,7 @@ export async function POST(request: Request) {
     const bytes = await file.arrayBuffer()
     const base64Image = Buffer.from(bytes).toString('base64')
     
+    console.log('Calling Render API...') // Debug log
     const response = await fetch(RENDER_API_URL, {
       method: 'POST',
       headers: {
@@ -29,9 +30,10 @@ export async function POST(request: Request) {
     })
 
     const data = await response.json()
-    console.log('Render API response:', data) // Add this for debugging
+    console.log('Render API response:', data) // Debug log
     
     if (!response.ok || !data.success) {
+      console.error('API Error:', data)
       return NextResponse.json({
         success: false,
         error: data.error || 'Failed to process image',
@@ -39,14 +41,7 @@ export async function POST(request: Request) {
       }, { status: response.status || 500 })
     }
 
-    return NextResponse.json({
-      success: true,
-      error: null,
-      result: {
-        subject: data.result?.subject || '',
-        story: data.result?.story || ''
-      }
-    })
+    return NextResponse.json(data)
   } catch (error) {
     console.error('Error:', error)
     return NextResponse.json({

@@ -94,8 +94,11 @@ def health_check() -> dict:
 def analyze_image(image_data):
     """Analyze image using DashScope MultiModal API"""
     try:
+        print("Starting image analysis...")  # Debug log
+        
         # Convert image data to base64
         image_base64 = base64.b64encode(image_data).decode('utf-8')
+        print("Image converted to base64")  # Debug log
         
         messages = [
             {
@@ -107,24 +110,30 @@ def analyze_image(image_data):
             }
         ]
 
+        print("Calling DashScope API...")  # Debug log
         response = MultiModalConversation.call(
             model='qwen-vl-plus',
             messages=messages,
             api_key=os.getenv('DASHSCOPE_API_KEY')
         )
+        print(f"DashScope API Response: {response}")  # Debug log
 
         if response.status_code == 200:
+            print("Got successful response from DashScope")  # Debug log
             subject = response.output.choices[0].message.content[0].get('text', '').strip()
+            print(f"Extracted subject: {subject}")  # Debug log
             # Clean up the subject to get just the main noun
             subject = subject.split()[0] if subject else "animal"
             
-            return {
+            result = {
                 "success": True,
                 "result": {
                     "subject": subject,
                     "story": f"A wonderful {subject} brought joy to everyone today. Every {subject} has unique characteristics!"
                 }
             }
+            print(f"Returning result: {result}")  # Debug log
+            return result
         else:
             raise Exception(f"DashScope API error: {response.message}")
 
@@ -132,7 +141,7 @@ def analyze_image(image_data):
         print(f"Error in analyze_image: {str(e)}")
         return {
             "success": False,
-            "error": "Failed to analyze image",
+            "error": str(e),  # Include the actual error message
             "result": None
         }
 
