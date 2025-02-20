@@ -29,74 +29,88 @@ def home():
 
 @app.route('/api/analyze', methods=['POST', 'OPTIONS'])
 def analyze_image_route():
-    response = jsonify({'status': 'ok'})
-    response.headers.add('Access-Control-Allow-Methods', 'POST')
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    
+    # Set CORS headers for all responses
+    def create_response(data, status_code=200):
+        response = jsonify(data)
+        response.headers.add('Access-Control-Allow-Methods', 'POST')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        return response, status_code
+
     if request.method == 'OPTIONS':
-        return response
+        return create_response({'status': 'ok'})
 
     try:
-        print("Received request")
         if not request.is_json:
-            return jsonify({
+            return create_response({
                 'success': False,
                 'error': 'Request must be JSON',
-                'subject': '',
-                'story': ''
-            })
+                'result': {
+                    'subject': '',
+                    'story': ''
+                }
+            }, 400)
 
         data = request.get_json()
         
         if not data or 'image' not in data:
-            return jsonify({
+            return create_response({
                 'success': False,
                 'error': 'No image found in request',
-                'subject': '',
-                'story': ''
-            })
+                'result': {
+                    'subject': '',
+                    'story': ''
+                }
+            }, 400)
 
         # Decode base64 image
         try:
             image_data = base64.b64decode(data['image'])
         except Exception as e:
-            return jsonify({
+            return create_response({
                 'success': False,
                 'error': 'Invalid image data',
-                'subject': '',
-                'story': ''
-            })
+                'result': {
+                    'subject': '',
+                    'story': ''
+                }
+            }, 400)
 
-        # Analyze image
+        # Analyze image and generate story
         try:
             subject = analyze_image(image_data)
             story = generate_story(subject)
-        except Exception as e:
-            print(f"API Error: {str(e)}")
-            return jsonify({
-                'success': False,
-                'error': 'API processing error',
-                'subject': '',
-                'story': ''
+            
+            return create_response({
+                'success': True,
+                'error': '',
+                'result': {
+                    'subject': subject,
+                    'story': story
+                }
             })
 
-        # Return success response
-        return jsonify({
-            'success': True,
-            'error': '',
-            'subject': subject,
-            'story': story
-        })
+        except Exception as e:
+            print(f"API Error: {str(e)}")
+            return create_response({
+                'success': False,
+                'error': 'Error processing image',
+                'result': {
+                    'subject': '',
+                    'story': ''
+                }
+            }, 500)
 
     except Exception as e:
         print(f"Server Error: {str(e)}")
-        return jsonify({
+        return create_response({
             'success': False,
             'error': 'Server error',
-            'subject': '',
-            'story': ''
-        })
+            'result': {
+                'subject': '',
+                'story': ''
+            }
+        }, 500)
 
 @app.route('/health', methods=['GET'])
 def health_check() -> dict:
