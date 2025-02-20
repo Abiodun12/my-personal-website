@@ -11,10 +11,8 @@ export async function POST(request: Request) {
     if (!file) {
       return NextResponse.json({ 
         success: false,
-        result: {
-          subject: '',
-          story: ''
-        }
+        error: 'No file provided',
+        result: null
       }, { status: 400 })
     }
 
@@ -31,27 +29,30 @@ export async function POST(request: Request) {
     })
 
     const data = await response.json()
+    console.log('Render API response:', data) // Add this for debugging
     
     if (!response.ok || !data.success) {
-      console.error('API Error:', data)
       return NextResponse.json({
         success: false,
-        result: {
-          subject: '',
-          story: ''
-        }
+        error: data.error || 'Failed to process image',
+        result: null
       }, { status: response.status || 500 })
     }
 
-    return NextResponse.json(data)
+    return NextResponse.json({
+      success: true,
+      error: null,
+      result: {
+        subject: data.result?.subject || '',
+        story: data.result?.story || ''
+      }
+    })
   } catch (error) {
     console.error('Error:', error)
-    return NextResponse.json(
-      { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Unexpected error'
-      },
-      { status: 500 }
-    )
+    return NextResponse.json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unexpected error',
+      result: null
+    }, { status: 500 })
   }
 } 

@@ -31,7 +31,7 @@ export default function SmartPetPlus() {
       })
       
       const data = await response.json()
-      console.log('Response:', data)
+      console.log('Response data:', data)
       
       if (!response.ok) {
         throw new Error(data.error || 'Server error')
@@ -39,13 +39,15 @@ export default function SmartPetPlus() {
       
       if (data.error) {
         setError(data.error)
+      } else if (!data.success) {
+        setError('Failed to process image')
       } else {
         setImage(URL.createObjectURL(file))
-        setSubject(data.subject)
-        setStory(data.story)
+        setSubject(data.result?.subject || '')
+        setStory(data.result?.story || '')
       }
     } catch (err) {
-      console.error('Error:', err)
+      console.error('Error details:', err)
       setError(err instanceof Error ? err.message : 'Error processing image')
     } finally {
       setLoading(false)
