@@ -31,6 +31,7 @@ export async function POST(request: Request) {
 
     // Get raw response text first for debugging
     const rawText = await response.text()
+    console.log('API Response:', rawText)
     
     try {
       // Try to parse as JSON

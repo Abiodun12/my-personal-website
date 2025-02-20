@@ -3,7 +3,6 @@ from flask_cors import CORS
 import os
 import base64
 from dotenv import load_dotenv
-import io
 import requests
 import json
 import datetime
@@ -23,7 +22,7 @@ DASHSCOPE_API_KEY = os.getenv('DASHSCOPE_API_KEY')
 DEEPSEEK_API_KEY = os.getenv('DEEPSEEK_API_KEY')
 DEEPSEEK_MODEL = "deepseek-chat"
 
-# Set DashScope base URL for international API
+# Set DashScope base URL
 dashscope.base_http_api_url = 'https://dashscope-intl.aliyuncs.com/api/v1'
 
 @app.route('/')
@@ -90,33 +89,38 @@ def health_check() -> dict:
         'version': '1.0.0'  # Added for monitoring
     })
 
-def generate_story(subject):
-    """Generate a creative story about the identified subject using DashScope"""
+def generate_story_with_deepseek(subject):
+    """Generate story using DeepSeek API"""
     try:
-        # Clean input using regex
+        # Clean the subject
         clean_subject = re.sub(r"^(a|an|the)\s+", "", subject, flags=re.IGNORECASE).split(',')[0].split('.')[0].strip()
-        # Remove weight estimates and other descriptors
-        clean_subject = re.sub(r"weighing.*", "", clean_subject).strip()
         
-        messages = [
-            {
-                "role": "system",
-                "content": f"You are a creative storyteller. Write engaging short stories about {clean_subject} in this format: [Story] ... [Fun Fact: ...]"
-            },
-            {
-                "role": "user",
-                "content": f"Write a 3-sentence engaging story about a {clean_subject}. Include one interesting fun fact. Use exactly this format: [Story] ... [Fun Fact: ...]"
-            }
-        ]
-
-        response = MultiModalConversation.call(
-            model='qwen-plus',  # Using text model for story generation
-            messages=messages,
-            api_key=os.getenv('DASHSCOPE_API_KEY')
-        )
-
+        url = "https://api.deepseek.com/v1/chat/completions"
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {DEEPSEEK_API_KEY}"
+        }
+        
+        prompt = f"Write a creative 3-sentence story about a {clean_subject}, followed by an interesting fun fact. Use this format exactly: [Story] ... [Fun Fact: ...]"
+        
+        data = {
+            "model": DEEPSEEK_MODEL,
+            "messages": [
+                {
+                    "role": "system",
+                    "content": "You are a creative storyteller who writes engaging stories about animals."
+                },
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ]
+        }
+        
+        response = requests.post(url, headers=headers, json=data)
+        
         if response.status_code == 200:
-            story = response.output.choices[0].message.content.strip()
+            story = response.json()['choices'][0]['message']['content'].strip()
             # Ensure proper formatting
             if not story.startswith('[Story]'):
                 story = f"[Story] {story}"
@@ -131,11 +135,12 @@ def generate_story(subject):
         return f"[Story] A curious {clean_subject} explored their world today, bringing smiles to everyone around them. [Fun Fact: {clean_subject}s are known for their remarkable intelligence and adaptability!]"
 
 def analyze_image(image_data):
-    """Analyze image using DashScope MultiModal API"""
+    """Analyze image using DashScope for subject identification, then DeepSeek for story"""
     try:
         print("Starting image analysis...")
         image_base64 = base64.b64encode(image_data).decode('utf-8')
         
+        # Use DashScope for image analysis
         messages = [
             {
                 "role": "user",
@@ -149,15 +154,16 @@ def analyze_image(image_data):
         response = MultiModalConversation.call(
             model='qwen-vl-plus',
             messages=messages,
-            api_key=os.getenv('DASHSCOPE_API_KEY')
+            api_key=DASHSCOPE_API_KEY
         )
 
         if response.status_code == 200:
+            # Extract and clean subject
             subject = response.output.choices[0].message.content[0].get('text', '').strip()
             print(f"Extracted subject: {subject}")
             
-            # Generate a story using DashScope
-            story = generate_story(subject)
+            # Generate story using DeepSeek
+            story = generate_story_with_deepseek(subject)
             print(f"Generated story: {story}")
             
             result = {
