@@ -40,13 +40,17 @@ class handler(BaseHTTPRequestHandler):
             self.end_headers()
             
             if response.status_code == 200:
-                description = response.output.labels[0].name if response.output.labels else "animal"
+                subject = response.output.labels[0].name if response.output.labels else "animal"
             else:
-                description = "animal"
+                subject = "animal"
 
+            # Match the frontend's expected response structure
             response_data = json.dumps({
                 'success': True,
-                'description': description
+                'result': {
+                    'subject': subject,
+                    'story': f"A wonderful {subject} brought joy to everyone today. Every {subject} has unique characteristics!"
+                }
             })
             self.wfile.write(response_data.encode())
             
@@ -56,8 +60,10 @@ class handler(BaseHTTPRequestHandler):
             self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
             
+            # Match the frontend's expected error response structure
             response_data = json.dumps({
                 'success': False,
-                'error': str(e)
+                'error': str(e),
+                'result': None
             })
             self.wfile.write(response_data.encode()) 
