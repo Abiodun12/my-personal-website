@@ -29,16 +29,27 @@ export async function POST(request: Request) {
       })
     })
 
-    const result = await response.json()
+    // Get raw response text first for debugging
+    const rawText = await response.text()
     
-    // Return the JSON response directly
-    return NextResponse.json(result)
+    try {
+      // Try to parse as JSON
+      const result = JSON.parse(rawText)
+      return NextResponse.json(result)
+    } catch (parseError) {
+      // If parsing fails, return the raw text in the error
+      return NextResponse.json({
+        success: false,
+        error: `API Response Error: ${rawText.slice(0, 200)}...`,
+        result: null
+      }, { status: 500 })
+    }
 
   } catch (error) {
     console.error('Error:', error)
     return NextResponse.json({
       success: false,
-      error: error instanceof Error ? error.message : 'Unexpected error',
+      error: `Request Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
       result: null
     }, { status: 500 })
   }

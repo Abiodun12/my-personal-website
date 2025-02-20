@@ -110,7 +110,12 @@ export default function SmartPetPlus() {
 
         {error && (
           <div className={styles.error}>
-            {error}
+            <h3>Error Details:</h3>
+            <pre>{error}</pre>
+            <p className={styles.errorHint}>
+              If you see "Unexpected token", this means the API returned invalid data. 
+              Please check the server logs for more details.
+            </p>
           </div>
         )}
 
