@@ -97,7 +97,7 @@ def analyze_image(image_data):
                 "role": "user",
                 "content": [
                     {"image": f"data:image/jpeg;base64,{image_base64}"},
-                    {"text": "What do you see in this image? Describe the main subject in one word."}
+                    {"text": "What is this? Describe the main subject in one word."}
                 ]
             }
         ]
@@ -106,7 +106,8 @@ def analyze_image(image_data):
         response = dashscope.MultiModalConversation.call(
             model='qwen-vl-max',
             api_key=DASHSCOPE_API_KEY,
-            messages=messages
+            messages=messages,
+            result_format='message'  # Ensure consistent response format
         )
         
         print(f"API Response: {response}")
@@ -114,19 +115,23 @@ def analyze_image(image_data):
         if response.status_code == 200:
             # Extract the subject from response
             text = response.output.choices[0].message.content[0]["text"].lower().strip()
+            # Remove punctuation
+            text = text.rstrip('.')
             print(f"Identified subject: {text}")
             return text
 
-        return "unknown subject"
+        return "unidentified object"
 
     except Exception as e:
         print(f"Detailed error in image analysis: {str(e)}")
-        return "unknown subject"
+        return "unidentified object"
 
 def generate_story(subject):
-    """Generate a concise, engaging story with a fun fact about the subject."""
+    """Generate a story about the identified subject."""
     try:
-        prompt = f"Write a very short story (2-3 sentences) about a {subject}. Include one fun fact about {subject}. Format: [Story] [Fun Fact: ...]"
+        # Create a more flexible prompt based on the subject
+        prompt = f"""Write a very short story (2-3 sentences) about this {subject}. 
+        Include one interesting fact. Format: [Story] [Fun Fact: ...]"""
 
         headers = {
             "Content-Type": "application/json",
@@ -136,11 +141,14 @@ def generate_story(subject):
         data = {
             "model": DEEPSEEK_MODEL,
             "messages": [
-                {"role": "system", "content": "You are a creative storyteller who specializes in short, engaging pet and animal stories with interesting facts. Keep stories brief and fun."},
+                {
+                    "role": "system", 
+                    "content": "You are a creative storyteller who specializes in engaging stories with interesting facts."
+                },
                 {"role": "user", "content": prompt}
             ],
-            "temperature": 1.5,
-            "max_tokens": 100,  # Reduced for shorter stories
+            "temperature": 1.2,  # Increased for more creative stories
+            "max_tokens": 150,
             "stream": False
         }
 
@@ -148,14 +156,16 @@ def generate_story(subject):
             "https://api.deepseek.com/v1/chat/completions",
             headers=headers,
             json=data,
-            timeout=10  # Added timeout to prevent hanging
+            timeout=10
         )
+        
         response.raise_for_status()
         story = response.json()["choices"][0]["message"]["content"]
         return story
+
     except Exception as e:
         print(f"DeepSeek API error: {str(e)}")
-        return f"Meet this amazing {subject}! Every day brings a new adventure with this wonderful companion. Fun Fact: Did you know that {subject}s have unique personalities just like humans?"
+        return f"A fascinating {subject} caught everyone's attention today. Its unique characteristics made it stand out. Fun Fact: Every {subject} has its own special story to tell!"
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 10000))
