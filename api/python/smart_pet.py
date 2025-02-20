@@ -33,6 +33,7 @@ def analyze_image_route():
         response = jsonify({'status': 'ok'})
         response.headers.add('Access-Control-Allow-Methods', 'POST')
         response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
+        response.headers.add('Access-Control-Allow-Origin', '*')
         return response
 
     try:
@@ -45,7 +46,7 @@ def analyze_image_route():
                 'error': 'No image found in request',
                 'subject': 'unknown',
                 'story': '[Story] No image was provided. [Fun Fact: Images help AI understand what you want to know about!]'
-            }), 400
+            })
 
         # Decode base64 image
         image_data = base64.b64decode(data['image'])
@@ -55,23 +56,32 @@ def analyze_image_route():
         print(f"Identified subject: {subject}")
 
         # Generate story with DeepSeek
-        story = generate_story(subject)
+        try:
+            story = generate_story(subject)
+        except Exception as e:
+            print(f"Story generation error: {str(e)}")
+            story = f"[Story] A wonderful {subject} appeared today! Its presence brought joy to everyone. [Fun Fact: {subject}s have unique personalities that make them special!]"
+        
         print(f"Generated story about: {subject}")
 
-        return jsonify({
+        response = jsonify({
             'success': True,
             'subject': subject,
             'story': story
         })
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        return response
 
     except Exception as e:
         print(f"Error in route: {str(e)}")
-        return jsonify({
+        response = jsonify({
             'success': False,
             'error': str(e),
             'subject': 'unknown',
             'story': '[Story] Something went wrong, but every error is a learning opportunity! [Fun Fact: Even AI sometimes needs a second try to get things right!]'
-        }), 500
+        })
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        return response
 
 @app.route('/health', methods=['GET'])
 def health_check() -> dict:
