@@ -46,12 +46,12 @@ export async function POST(request: Request) {
     return NextResponse.json(data)
   } catch (error) {
     console.error('Error:', error)
-    return NextResponse.json({
-      success: false,
-      result: {
-        subject: '',
-        story: ''
-      }
-    }, { status: 500 })
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Unexpected error'
+      },
+      { status: 500 }
+    )
   }
 } 
