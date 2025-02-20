@@ -36,9 +36,7 @@ def analyze_image_route():
         return '', 204
 
     try:
-        print("Received analyze request") # Debug log
         if not request.is_json:
-            print("Request is not JSON") # Debug log
             return jsonify({
                 "success": False,
                 "error": "Request must be JSON",
@@ -46,10 +44,8 @@ def analyze_image_route():
             }), 400
 
         data = request.get_json()
-        print("Request data received") # Debug log
         
         if 'image' not in data:
-            print("No image in request") # Debug log
             return jsonify({
                 "success": False,
                 "error": "No image provided",
@@ -59,9 +55,7 @@ def analyze_image_route():
         # Decode base64 image
         try:
             image_data = base64.b64decode(data['image'])
-            print("Image decoded successfully") # Debug log
         except:
-            print("Failed to decode image") # Debug log
             return jsonify({
                 "success": False,
                 "error": "Invalid image data",
@@ -70,18 +64,14 @@ def analyze_image_route():
 
         # Analyze image
         result = analyze_image(image_data)
-        print(f"Analysis result: {result}") # Debug log
         
-        # Always return JSON response with consistent structure
-        response = jsonify(result)
-        print(f"Sending response: {response.get_data(as_text=True)}") # Debug log
-        return response
+        # Ensure we only return JSON
+        return jsonify(result)
 
     except Exception as e:
-        print(f"Error in route handler: {str(e)}") # Debug log
         return jsonify({
             "success": False,
-            "error": "Server error",
+            "error": str(e),
             "result": None
         }), 500
 
