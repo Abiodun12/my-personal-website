@@ -9,8 +9,7 @@ import json
 import datetime
 import re
 import dashscope
-import time
-from dashscope import ImageRecognition
+from dashscope import MultiModalConversation
 
 app = Flask(__name__)
 # Enable CORS for all domains and routes
@@ -23,6 +22,9 @@ load_dotenv()
 DASHSCOPE_API_KEY = os.getenv('DASHSCOPE_API_KEY')
 DEEPSEEK_API_KEY = os.getenv('DEEPSEEK_API_KEY')
 DEEPSEEK_MODEL = "deepseek-chat"
+
+# Set DashScope base URL for international API
+dashscope.base_http_api_url = 'https://dashscope-intl.aliyuncs.com/api/v1'
 
 @app.route('/')
 def home():
@@ -90,41 +92,44 @@ def health_check() -> dict:
     })
 
 def analyze_image(image_data):
-    """Analyze image using DashScope Vision API"""
+    """Analyze image using DashScope MultiModal API"""
     try:
         # Convert image data to base64
         image_base64 = base64.b64encode(image_data).decode('utf-8')
         
-        # Save temporary file for DashScope
-        temp_path = "temp_image.jpg"
-        with open(temp_path, "wb") as f:
-            f.write(image_data)
+        messages = [
+            {
+                "role": "user",
+                "content": [
+                    {"image": f"data:image/jpeg;base64,{image_base64}"},
+                    {"text": "What is this? Give me just the subject name."}
+                ]
+            }
+        ]
 
-        # Call DashScope API
-        response = ImageRecognition.call(
-            model='image-recognition',
-            image_path=temp_path,
-            api_key=os.environ.get('DASHSCOPE_API_KEY')
+        response = MultiModalConversation.call(
+            model='qwen-vl-plus',
+            messages=messages,
+            api_key=os.getenv('DASHSCOPE_API_KEY')
         )
 
-        # Clean up temp file
-        os.remove(temp_path)
-
         if response.status_code == 200:
-            subject = response.output.labels[0].name if response.output.labels else "animal"
+            subject = response.output.choices[0].message.content[0].get('text', '').strip()
+            # Clean up the subject to get just the main noun
+            subject = subject.split()[0] if subject else "animal"
+            
+            return {
+                "success": True,
+                "result": {
+                    "subject": subject,
+                    "story": f"A wonderful {subject} brought joy to everyone today. Every {subject} has unique characteristics!"
+                }
+            }
         else:
             raise Exception(f"DashScope API error: {response.message}")
 
-        return {
-            "success": True,
-            "result": {
-                "subject": subject,
-                "story": f"A wonderful {subject} brought joy to everyone today. Every {subject} has unique characteristics!"
-            }
-        }
-
     except Exception as e:
-        print(f"Error in analyze_image: {str(e)}")  # Log error but don't send in response
+        print(f"Error in analyze_image: {str(e)}")
         return {
             "success": False,
             "error": "Failed to analyze image",
