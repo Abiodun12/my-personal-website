@@ -91,34 +91,66 @@ def analyze_image(image_data):
         # Set up DashScope API base URL
         dashscope.base_http_api_url = 'https://dashscope-intl.aliyuncs.com/api/v1'
 
-        # Create message for image analysis
+        # First, determine if it's an animal
         messages = [
             {
                 "role": "user",
                 "content": [
                     {"image": f"data:image/jpeg;base64,{image_base64}"},
-                    {"text": "What is this? Describe the main subject in one word."}
+                    {"text": "Is this an animal? Answer with just 'yes' or 'no'."}
                 ]
             }
         ]
 
-        print("Calling DashScope API...")
+        print("Checking if image contains an animal...")
         response = dashscope.MultiModalConversation.call(
             model='qwen-vl-max',
             api_key=DASHSCOPE_API_KEY,
             messages=messages,
-            result_format='message'  # Ensure consistent response format
+            result_format='message'
         )
-        
-        print(f"API Response: {response}")
 
         if response.status_code == 200:
-            # Extract the subject from response
-            text = response.output.choices[0].message.content[0]["text"].lower().strip()
-            # Remove punctuation
-            text = text.rstrip('.')
-            print(f"Identified subject: {text}")
-            return text
+            is_animal = 'yes' in response.output.choices[0].message.content[0]["text"].lower()
+            
+            if is_animal:
+                # If it's an animal, ask for specific breed identification
+                messages = [
+                    {
+                        "role": "user",
+                        "content": [
+                            {"image": f"data:image/jpeg;base64,{image_base64}"},
+                            {"text": "What breed of animal is this? Be specific and accurate. Give just the breed name."}
+                        ]
+                    }
+                ]
+            else:
+                # If not an animal, ask for general object identification
+                messages = [
+                    {
+                        "role": "user",
+                        "content": [
+                            {"image": f"data:image/jpeg;base64,{image_base64}"},
+                            {"text": "What is this? Describe the main subject in one word."}
+                        ]
+                    }
+                ]
+
+            print("Getting detailed identification...")
+            response = dashscope.MultiModalConversation.call(
+                model='qwen-vl-max',
+                api_key=DASHSCOPE_API_KEY,
+                messages=messages,
+                result_format='message'
+            )
+            
+            print(f"API Response: {response}")
+
+            if response.status_code == 200:
+                text = response.output.choices[0].message.content[0]["text"].lower().strip()
+                text = text.rstrip('.')
+                print(f"Identified subject: {text}")
+                return text
 
         return "unidentified object"
 
