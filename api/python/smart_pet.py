@@ -100,6 +100,41 @@ def health_check() -> dict:
         'version': '1.0.0'  # Added for monitoring
     })
 
+def generate_story(subject):
+    """Generate a creative story about the identified subject using DashScope"""
+    try:
+        messages = [
+            {
+                "role": "system",
+                "content": "You are a creative storyteller. Write engaging stories about animals in this format: [Story] ... [Fun Fact: ...]"
+            },
+            {
+                "role": "user",
+                "content": f"Write a short, engaging story about a {subject}. Include an interesting fun fact. Use exactly this format: [Story] ... [Fun Fact: ...]"
+            }
+        ]
+
+        response = MultiModalConversation.call(
+            model='qwen-plus',  # Using text model for story generation
+            messages=messages,
+            api_key=os.getenv('DASHSCOPE_API_KEY')
+        )
+
+        if response.status_code == 200:
+            story = response.output.choices[0].message.content.strip()
+            # Ensure proper formatting
+            if not story.startswith('[Story]'):
+                story = f"[Story] {story}"
+            if '[Fun Fact:' not in story:
+                story = f"{story} [Fun Fact: {subject}s have fascinating abilities!]"
+            return story
+        else:
+            return f"[Story] A curious {subject} explored their world today, bringing smiles to everyone around them. [Fun Fact: {subject}s are known for their remarkable intelligence and adaptability!]"
+
+    except Exception as e:
+        print(f"Story generation error: {str(e)}")
+        return f"[Story] A curious {subject} explored their world today, bringing smiles to everyone around them. [Fun Fact: {subject}s are known for their remarkable intelligence and adaptability!]"
+
 def analyze_image(image_data):
     """Analyze image using DashScope MultiModal API"""
     try:
@@ -111,7 +146,7 @@ def analyze_image(image_data):
                 "role": "user",
                 "content": [
                     {"image": f"data:image/jpeg;base64,{image_base64}"},
-                    {"text": "What is this? Give me just the subject name."}
+                    {"text": "What animal or pet is shown in this image? Give me a specific but concise answer."}
                 ]
             }
         ]
@@ -126,8 +161,9 @@ def analyze_image(image_data):
             subject = response.output.choices[0].message.content[0].get('text', '').strip()
             print(f"Extracted subject: {subject}")
             
-            # Generate a story for the subject
+            # Generate a story using DashScope
             story = generate_story(subject)
+            print(f"Generated story: {story}")
             
             result = {
                 "success": True,
@@ -148,45 +184,6 @@ def analyze_image(image_data):
             "error": str(e),
             "result": None
         }
-
-def generate_story(subject):
-    """Generate a creative story about the identified subject."""
-    try:
-        prompt = f"Write a short story about a {subject}. Include a fun fact. Format: [Story] ... [Fun Fact: ...]"
-
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {DEEPSEEK_API_KEY}"
-        }
-
-        data = {
-            "model": DEEPSEEK_MODEL,
-            "messages": [
-                {
-                    "role": "system",
-                    "content": "You are a creative storyteller. Write engaging stories about animals."
-                },
-                {"role": "user", "content": prompt}
-            ],
-            "temperature": 0.7,
-            "max_tokens": 150
-        }
-
-        response = requests.post(
-            "https://api.deepseek.com/v1/chat/completions",
-            headers=headers,
-            json=data,
-            timeout=10
-        )
-
-        if response.status_code == 200:
-            return response.json()["choices"][0]["message"]["content"]
-        else:
-            return f"[Story] A playful {subject} brought joy to everyone with their unique personality. [Fun Fact: {subject}s have amazing abilities!]"
-
-    except Exception as e:
-        print(f"Story generation error: {str(e)}")
-        return f"[Story] A playful {subject} brought joy to everyone with their unique personality. [Fun Fact: {subject}s have amazing abilities!]"
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 10000))
