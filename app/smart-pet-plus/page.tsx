@@ -73,6 +73,15 @@ export default function SmartPetPlus() {
     }
   }
 
+  // Add render condition logging
+  console.log('Render conditions:', {
+    image: !!image,
+    subject: !!subject,
+    story: !!story,
+    error: !!error,
+    loading
+  })
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -110,14 +119,17 @@ export default function SmartPetPlus() {
           </div>
         )}
 
-        {/* Debug output */}
+        {/* Debug output with more details */}
         <div className={styles.debug}>
-          <p>Image: {image ? 'Set' : 'Not set'}</p>
+          <p>Image URL: {image || 'Not set'}</p>
           <p>Subject: {subject || 'Not set'}</p>
           <p>Story: {story || 'Not set'}</p>
+          <p>Error: {error || 'None'}</p>
+          <p>Loading: {loading.toString()}</p>
         </div>
 
-        {image && subject && story && (
+        {/* Conditional rendering with more explicit check */}
+        {(image && subject && story) ? (
           <div className={styles.story}>
             <img src={image} alt="Uploaded pet" />
             <div className={styles.storyContent}>
@@ -130,6 +142,13 @@ export default function SmartPetPlus() {
                 <p>{story}</p>
               </div>
             </div>
+          </div>
+        ) : (
+          <div className={styles.debug}>
+            <p>Waiting for all content to be ready...</p>
+            <p>Image: {image ? '✓' : '✗'}</p>
+            <p>Subject: {subject ? '✓' : '✗'}</p>
+            <p>Story: {story ? '✓' : '✗'}</p>
           </div>
         )}
       </div>
