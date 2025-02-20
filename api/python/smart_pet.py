@@ -103,14 +103,17 @@ def health_check() -> dict:
 def generate_story(subject):
     """Generate a creative story about the identified subject using DashScope"""
     try:
+        # Clean the subject input
+        clean_subject = subject.replace("The image shows a ", "").replace("a ", "").split(".")[0].strip()
+        
         messages = [
             {
                 "role": "system",
-                "content": "You are a creative storyteller. Write engaging stories about animals in this format: [Story] ... [Fun Fact: ...]"
+                "content": f"You are a creative storyteller. Write engaging short stories about {clean_subject} in this format: [Story] ... [Fun Fact: ...]"
             },
             {
                 "role": "user",
-                "content": f"Write a short, engaging story about a {subject}. Include an interesting fun fact. Use exactly this format: [Story] ... [Fun Fact: ...]"
+                "content": f"Write a 3-sentence engaging story about a {clean_subject}. Include one interesting fun fact. Use exactly this format: [Story] ... [Fun Fact: ...]"
             }
         ]
 
@@ -126,14 +129,14 @@ def generate_story(subject):
             if not story.startswith('[Story]'):
                 story = f"[Story] {story}"
             if '[Fun Fact:' not in story:
-                story = f"{story} [Fun Fact: {subject}s have fascinating abilities!]"
+                story = f"{story} [Fun Fact: {clean_subject}s have fascinating abilities!]"
             return story
         else:
-            return f"[Story] A curious {subject} explored their world today, bringing smiles to everyone around them. [Fun Fact: {subject}s are known for their remarkable intelligence and adaptability!]"
+            return f"[Story] A curious {clean_subject} explored their world today, bringing smiles to everyone around them. [Fun Fact: {clean_subject}s are known for their remarkable intelligence and adaptability!]"
 
     except Exception as e:
         print(f"Story generation error: {str(e)}")
-        return f"[Story] A curious {subject} explored their world today, bringing smiles to everyone around them. [Fun Fact: {subject}s are known for their remarkable intelligence and adaptability!]"
+        return f"[Story] A curious {clean_subject} explored their world today, bringing smiles to everyone around them. [Fun Fact: {clean_subject}s are known for their remarkable intelligence and adaptability!]"
 
 def analyze_image(image_data):
     """Analyze image using DashScope MultiModal API"""

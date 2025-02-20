@@ -40,7 +40,10 @@ class handler(BaseHTTPRequestHandler):
             self.end_headers()
             
             if response.status_code == 200:
-                subject = response.output.labels[0].name if response.output.labels else "animal"
+                # Extract just the animal name from the label
+                raw_label = response.output.labels[0].name if response.output.labels else "animal"
+                # Clean up the label text by removing "the image shows a" phrasing
+                subject = raw_label.replace("The image shows a ", "").replace("a ", "").split(".")[0].strip()
             else:
                 subject = "animal"
 
