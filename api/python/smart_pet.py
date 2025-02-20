@@ -29,59 +29,74 @@ def home():
 
 @app.route('/api/analyze', methods=['POST', 'OPTIONS'])
 def analyze_image_route():
+    response = jsonify({'status': 'ok'})
+    response.headers.add('Access-Control-Allow-Methods', 'POST')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    
     if request.method == 'OPTIONS':
-        response = jsonify({'status': 'ok'})
-        response.headers.add('Access-Control-Allow-Methods', 'POST')
-        response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
-        response.headers.add('Access-Control-Allow-Origin', '*')
         return response
 
     try:
         print("Received request")
+        if not request.is_json:
+            return jsonify({
+                'success': False,
+                'error': 'Request must be JSON',
+                'subject': '',
+                'story': ''
+            })
+
         data = request.get_json()
         
         if not data or 'image' not in data:
             return jsonify({
                 'success': False,
                 'error': 'No image found in request',
-                'subject': 'unknown',
-                'story': '[Story] No image was provided. [Fun Fact: Images help AI understand what you want to know about!]'
+                'subject': '',
+                'story': ''
             })
 
         # Decode base64 image
-        image_data = base64.b64decode(data['image'])
-        
-        # Analyze image with DashScope
-        subject = analyze_image(image_data)
-        print(f"Identified subject: {subject}")
-
-        # Generate story with DeepSeek
         try:
+            image_data = base64.b64decode(data['image'])
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': 'Invalid image data',
+                'subject': '',
+                'story': ''
+            })
+
+        # Analyze image
+        try:
+            subject = analyze_image(image_data)
             story = generate_story(subject)
         except Exception as e:
-            print(f"Story generation error: {str(e)}")
-            story = f"[Story] A wonderful {subject} appeared today! Its presence brought joy to everyone. [Fun Fact: {subject}s have unique personalities that make them special!]"
-        
-        print(f"Generated story about: {subject}")
+            print(f"API Error: {str(e)}")
+            return jsonify({
+                'success': False,
+                'error': 'API processing error',
+                'subject': '',
+                'story': ''
+            })
 
-        response = jsonify({
+        # Return success response
+        return jsonify({
             'success': True,
+            'error': '',
             'subject': subject,
             'story': story
         })
-        response.headers.add('Access-Control-Allow-Origin', '*')
-        return response
 
     except Exception as e:
-        print(f"Error in route: {str(e)}")
-        response = jsonify({
+        print(f"Server Error: {str(e)}")
+        return jsonify({
             'success': False,
-            'error': str(e),
-            'subject': 'unknown',
-            'story': '[Story] Something went wrong, but every error is a learning opportunity! [Fun Fact: Even AI sometimes needs a second try to get things right!]'
+            'error': 'Server error',
+            'subject': '',
+            'story': ''
         })
-        response.headers.add('Access-Control-Allow-Origin', '*')
-        return response
 
 @app.route('/health', methods=['GET'])
 def health_check() -> dict:
