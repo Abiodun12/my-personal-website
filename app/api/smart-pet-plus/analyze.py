@@ -4,6 +4,7 @@ import base64
 import io
 import os
 from dashscope import ImageRecognition
+import re
 
 class handler(BaseHTTPRequestHandler):
     def do_POST(self):
@@ -40,10 +41,12 @@ class handler(BaseHTTPRequestHandler):
             self.end_headers()
             
             if response.status_code == 200:
-                # Extract just the animal name from the label
                 raw_label = response.output.labels[0].name if response.output.labels else "animal"
-                # Clean up the label text by removing "the image shows a" phrasing
-                subject = raw_label.replace("The image shows a ", "").replace("a ", "").split(".")[0].strip()
+                # Extract just the animal name using regex
+                match = re.search(r"(a|an|the)?\s*(.*?)(?:,|\.|$)", raw_label, re.IGNORECASE)
+                subject = match.group(2).strip() if match else "animal"
+                # Remove any remaining articles
+                subject = re.sub(r"^(a|an|the)\s+", "", subject, flags=re.IGNORECASE)
             else:
                 subject = "animal"
 

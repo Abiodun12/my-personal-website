@@ -103,8 +103,10 @@ def health_check() -> dict:
 def generate_story(subject):
     """Generate a creative story about the identified subject using DashScope"""
     try:
-        # Clean the subject input
-        clean_subject = subject.replace("The image shows a ", "").replace("a ", "").split(".")[0].strip()
+        # Clean input using regex
+        clean_subject = re.sub(r"^(a|an|the)\s+", "", subject, flags=re.IGNORECASE).split(',')[0].split('.')[0].strip()
+        # Remove weight estimates and other descriptors
+        clean_subject = re.sub(r"weighing.*", "", clean_subject).strip()
         
         messages = [
             {
