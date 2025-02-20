@@ -141,18 +141,26 @@ export default function SmartPetPlus() {
               </div>
               <div>
                 <h3>Your Pet's Story:</h3>
-                <p>{story.split('[Fun Fact:').map((part, index) => {
-                  if (index === 0) {
-                    return part.replace('[Story]', '').trim()
-                  } else {
-                    return (
-                      <React.Fragment key={index}>
-                        <br /><br />
-                        <strong>Fun Fact:</strong>{part.replace(']', '').trim()}
-                      </React.Fragment>
-                    )
-                  }
-                })}</p>
+                <div className={styles.storyText}>
+                  {story.split('[Fun Fact:').map((part, index) => {
+                    if (index === 0) {
+                      return (
+                        <p key={index}>
+                          {part.replace('[Story]', '').trim()}
+                        </p>
+                      )
+                    } else {
+                      return (
+                        <React.Fragment key={index}>
+                          <div className={styles.funFact}>
+                            <strong>Fun Fact:</strong> 
+                            {part.replace(']', '').trim()}
+                          </div>
+                        </React.Fragment>
+                      )
+                    }
+                  })}
+                </div>
               </div>
             </div>
           </div>
