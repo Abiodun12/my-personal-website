@@ -10,6 +10,7 @@ import datetime
 import re
 import dashscope
 import time
+from dashscope import ImageRecognition
 
 app = Flask(__name__)
 # Enable CORS for all domains and routes
@@ -29,53 +30,49 @@ def home():
 
 @app.route('/api/analyze', methods=['POST', 'OPTIONS'])
 def analyze_image_route():
-    def create_response(data):
-        response = jsonify(data)
-        response.headers.add('Access-Control-Allow-Origin', '*')
-        response.headers.add('Access-Control-Allow-Methods', 'POST, OPTIONS')
-        response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
-        return response
-
     if request.method == 'OPTIONS':
-        return create_response({
-            'success': True,
-            'result': {
-                'subject': '',
-                'story': ''
-            }
-        })
+        return '', 204
 
     try:
+        if not request.is_json:
+            return jsonify({
+                "success": False,
+                "error": "Request must be JSON",
+                "result": None
+            }), 400
+
         data = request.get_json()
-        if not data or 'image' not in data:
-            return create_response({
-                'success': False,
-                'result': {
-                    'subject': '',
-                    'story': ''
-                }
-            })
+        
+        if 'image' not in data:
+            return jsonify({
+                "success": False,
+                "error": "No image provided",
+                "result": None
+            }), 400
 
-        image_data = base64.b64decode(data['image'])
-        subject = analyze_image(image_data)
-        story = generate_story(subject)
+        # Decode base64 image
+        try:
+            image_data = base64.b64decode(data['image'])
+        except:
+            return jsonify({
+                "success": False,
+                "error": "Invalid image data",
+                "result": None
+            }), 400
 
-        return create_response({
-            'success': True,
-            'result': {
-                'subject': subject,
-                'story': story
-            }
-        })
+        # Analyze image
+        result = analyze_image(image_data)
+        
+        # Always return JSON response
+        return jsonify(result)
 
     except Exception as e:
-        return create_response({
-            'success': False,
-            'result': {
-                'subject': '',
-                'story': ''
-            }
-        })
+        print(f"Error in route handler: {str(e)}")  # Log error but don't send in response
+        return jsonify({
+            "success": False,
+            "error": "Server error",
+            "result": None
+        }), 500
 
 @app.route('/health', methods=['GET'])
 def health_check() -> dict:
@@ -98,80 +95,41 @@ def analyze_image(image_data):
         # Convert image data to base64
         image_base64 = base64.b64encode(image_data).decode('utf-8')
         
-        # Set up DashScope API base URL
-        dashscope.base_http_api_url = 'https://dashscope-intl.aliyuncs.com/api/v1'
+        # Save temporary file for DashScope
+        temp_path = "temp_image.jpg"
+        with open(temp_path, "wb") as f:
+            f.write(image_data)
 
-        def call_api_with_retry(messages, max_retries=3, delay=2):
-            """Helper function to call API with retry logic"""
-            for attempt in range(max_retries):
-                try:
-                    response = dashscope.MultiModalConversation.call(
-                        model='qwen-vl-max',
-                        api_key=DASHSCOPE_API_KEY,
-                        messages=messages,
-                        result_format='message'
-                    )
-                    
-                    if response.status_code == 429:  # Rate limit error
-                        if attempt < max_retries - 1:
-                            time.sleep(delay)
-                            continue
-                    return response
-                except Exception as e:
-                    if attempt < max_retries - 1:
-                        time.sleep(delay)
-                        continue
-                    raise
-            return None
+        # Call DashScope API
+        response = ImageRecognition.call(
+            model='image-recognition',
+            image_path=temp_path,
+            api_key=os.environ.get('DASHSCOPE_API_KEY')
+        )
 
-        # First check if it's an animal
-        messages = [
-            {
-                "role": "user",
-                "content": [
-                    {"image": f"data:image/jpeg;base64,{image_base64}"},
-                    {"text": "Is this an animal? Answer with just 'yes' or 'no'."}
-                ]
+        # Clean up temp file
+        os.remove(temp_path)
+
+        if response.status_code == 200:
+            subject = response.output.labels[0].name if response.output.labels else "animal"
+        else:
+            raise Exception(f"DashScope API error: {response.message}")
+
+        return {
+            "success": True,
+            "result": {
+                "subject": subject,
+                "story": f"A wonderful {subject} brought joy to everyone today. Every {subject} has unique characteristics!"
             }
-        ]
-
-        response = call_api_with_retry(messages)
-        
-        if response and response.status_code == 200:
-            is_animal = 'yes' in response.output.choices[0].message.content[0]["text"].lower()
-            
-            if is_animal:
-                messages = [
-                    {
-                        "role": "user",
-                        "content": [
-                            {"image": f"data:image/jpeg;base64,{image_base64}"},
-                            {"text": "What breed of animal is this? Be specific and accurate. Give just the breed name."}
-                        ]
-                    }
-                ]
-            else:
-                messages = [
-                    {
-                        "role": "user",
-                        "content": [
-                            {"image": f"data:image/jpeg;base64,{image_base64}"},
-                            {"text": "What is this? Describe the main subject in one word."}
-                        ]
-                    }
-                ]
-
-            response = call_api_with_retry(messages)
-            
-            if response and response.status_code == 200:
-                text = response.output.choices[0].message.content[0]["text"].lower().strip()
-                text = text.rstrip('.')
-                return text
-
-        return "unidentified object"
+        }
 
     except Exception as e:
-        return "unidentified object"
+        print(f"Error in analyze_image: {str(e)}")  # Log error but don't send in response
+        return {
+            "success": False,
+            "error": "Failed to analyze image",
+            "result": None
+        }
 
 def generate_story(subject):
     """Generate a story about the identified subject."""
