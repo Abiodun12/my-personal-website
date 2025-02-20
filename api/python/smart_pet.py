@@ -29,9 +29,9 @@ def home():
 
 @app.route('/api/analyze', methods=['POST', 'OPTIONS'])
 def analyze_image_route():
-        response = jsonify({'status': 'ok'})
-        response.headers.add('Access-Control-Allow-Methods', 'POST')
-        response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
+    response = jsonify({'status': 'ok'})
+    response.headers.add('Access-Control-Allow-Methods', 'POST')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
     response.headers.add('Access-Control-Allow-Origin', '*')
     
     if request.method == 'OPTIONS':
@@ -59,7 +59,7 @@ def analyze_image_route():
 
         # Decode base64 image
         try:
-        image_data = base64.b64decode(data['image'])
+            image_data = base64.b64decode(data['image'])
         except Exception as e:
             return jsonify({
                 'success': False,
@@ -70,8 +70,8 @@ def analyze_image_route():
 
         # Analyze image
         try:
-        subject = analyze_image(image_data)
-        story = generate_story(subject)
+            subject = analyze_image(image_data)
+            story = generate_story(subject)
         except Exception as e:
             print(f"API Error: {str(e)}")
             return jsonify({
