@@ -171,21 +171,31 @@ def analyze_image(image_data):
             subject = response.output.choices[0].message.content[0].get('text', '').strip()
             print(f"Extracted subject: {subject}")
             
+            if not subject:
+                return {
+                    "success": False,
+                    "error": "Could not identify subject in image",
+                    "result": None
+                }
+            
             # Generate story using DeepSeek
             story = generate_story_with_deepseek(subject)
             print(f"Generated story: {story}")
             
-            result = {
+            return {
                 "success": True,
+                "error": None,
                 "result": {
                     "subject": subject,
                     "story": story
                 }
             }
-            print(f"Returning result: {result}")
-            return result
         else:
-            raise Exception(f"DashScope API error: {response.message}")
+            return {
+                "success": False,
+                "error": f"DashScope API error: {response.message}",
+                "result": None
+            }
 
     except Exception as e:
         print(f"Error in analyze_image: {str(e)}")

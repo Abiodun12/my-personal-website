@@ -23,23 +23,36 @@ export async function POST(request: Request) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json'
       },
       body: JSON.stringify({
         image: base64Image
       })
     })
 
-    if (!response.ok) {
-      const errorText = await response.text()
+    let responseData
+    const contentType = response.headers.get('content-type')
+    
+    if (contentType && contentType.includes('application/json')) {
+      responseData = await response.json()
+    } else {
+      const textResponse = await response.text()
       return NextResponse.json({
         success: false,
-        error: `API Error (${response.status}): ${errorText}`,
+        error: `Invalid response format: ${textResponse.substring(0, 100)}...`,
+        result: null
+      }, { status: 500 })
+    }
+
+    if (!response.ok) {
+      return NextResponse.json({
+        success: false,
+        error: responseData.error || `API Error (${response.status})`,
         result: null
       }, { status: response.status })
     }
 
-    const result = await response.json()
-    return NextResponse.json(result)
+    return NextResponse.json(responseData)
 
   } catch (error) {
     console.error('Error:', error)

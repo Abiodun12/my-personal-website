@@ -34,20 +34,27 @@ export default function SmartPetPlus() {
         body: formData,
       })
 
+      const contentType = response.headers.get('content-type')
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Invalid response format from server')
+      }
+
       const data = await response.json()
 
       if (!data.success) {
-        throw new Error(data.error || 'An error occurred while processing your request')
+        throw new Error(data.error || 'Failed to process image')
       }
 
-      if (data.result) {
-        setImage(URL.createObjectURL(file))
-        setSubject(data.result.subject || 'Unknown')
-        setStory(data.result.story || 'No story generated')
+      if (!data.result || !data.result.subject || !data.result.story) {
+        throw new Error('Invalid response data from server')
       }
+
+      setImage(URL.createObjectURL(file))
+      setSubject(data.result.subject)
+      setStory(data.result.story)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unexpected error occurred')
       console.error('Error:', err)
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred')
     } finally {
       setLoading(false)
     }
