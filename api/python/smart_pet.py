@@ -62,10 +62,19 @@ def analyze_image_route():
             }), 400
 
         # Analyze image
-        result = analyze_image(image_data)
-        
-        # Ensure we only return JSON
-        return jsonify(result)
+        try:
+            result = analyze_image(image_data)
+            return jsonify({
+                "success": True,
+                "error": None,
+                "result": result
+            })
+        except Exception as e:
+            return jsonify({
+                "success": False,
+                "error": str(e),
+                "result": None
+            }), 500
 
     except Exception as e:
         return jsonify({

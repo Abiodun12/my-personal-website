@@ -29,28 +29,23 @@ export async function POST(request: Request) {
       })
     })
 
-    // Get raw response text first for debugging
-    const rawText = await response.text()
-    console.log('API Response:', rawText)
-    
-    try {
-      // Try to parse as JSON
-      const result = JSON.parse(rawText)
-      return NextResponse.json(result)
-    } catch (parseError) {
-      // If parsing fails, return the raw text in the error
+    if (!response.ok) {
+      const errorText = await response.text()
       return NextResponse.json({
         success: false,
-        error: `API Response Error: ${rawText.slice(0, 200)}...`,
+        error: `API Error (${response.status}): ${errorText}`,
         result: null
-      }, { status: 500 })
+      }, { status: response.status })
     }
+
+    const result = await response.json()
+    return NextResponse.json(result)
 
   } catch (error) {
     console.error('Error:', error)
     return NextResponse.json({
       success: false,
-      error: `Request Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      error: error instanceof Error ? error.message : 'Unknown error',
       result: null
     }, { status: 500 })
   }

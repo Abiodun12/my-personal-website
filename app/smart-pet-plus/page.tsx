@@ -15,7 +15,6 @@ export default function SmartPetPlus() {
     e.preventDefault()
     setLoading(true)
     setError(null)
-    // Reset previous results
     setImage(null)
     setSubject(null)
     setStory(null)
@@ -28,148 +27,92 @@ export default function SmartPetPlus() {
       setLoading(false)
       return
     }
-    
+
     try {
-      console.log('Submitting image...') // Debug log
       const response = await fetch('/api/smart-pet-plus', {
         method: 'POST',
         body: formData,
       })
-      
+
       const data = await response.json()
-      console.log('Response data:', data) // Debug log
-      
-      if (!response.ok) {
-        throw new Error(data.error || 'Server error')
+
+      if (!data.success) {
+        throw new Error(data.error || 'An error occurred while processing your request')
       }
-      
-      if (data.error) {
-        console.error('Error from server:', data.error)
-        setError(data.error)
-      } else if (!data.success) {
-        console.error('Request not successful:', data)
-        setError('Failed to process image')
-      } else if (!data.result) {
-        console.error('No result in response:', data)
-        setError('No analysis result received')
-      } else {
-        console.log('Setting results:', data.result)
-        const imageUrl = URL.createObjectURL(file)
-        setImage(imageUrl)
-        setSubject(data.result.subject)
-        setStory(data.result.story)
-        
-        // Verify states were set
-        console.log('States after setting:', {
-          imageUrl,
-          subject: data.result.subject,
-          story: data.result.story
-        })
+
+      if (data.result) {
+        setImage(URL.createObjectURL(file))
+        setSubject(data.result.subject || 'Unknown')
+        setStory(data.result.story || 'No story generated')
       }
     } catch (err) {
-      console.error('Error details:', err)
-      setError(err instanceof Error ? err.message : 'Error processing image')
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred')
+      console.error('Error:', err)
     } finally {
       setLoading(false)
     }
   }
 
-  // Add render condition logging
-  console.log('Render conditions:', {
-    image: !!image,
-    subject: !!subject,
-    story: !!story,
-    error: !!error,
-    loading
-  })
-
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h1>SmartPet+ by Cougar AI</h1>
+        <h1>Smart Pet Plus</h1>
         <p>Upload a Picture of Your Pet (or Any Animal)</p>
         <p>We'll identify what it is, then tell you a heartwarming story!</p>
       </div>
 
-      <div className={styles.content}>
-        <form onSubmit={handleSubmit} className={styles.form}>
-          <input
-            type="file"
-            name="uploaded-file"
-            accept="image/*"
-            className={styles.fileInput}
-          />
-          <button 
-            type="submit" 
-            className={styles.submitButton}
-            disabled={loading}
-          >
-            {loading ? 'Processing...' : 'Submit'}
-          </button>
-        </form>
+      <form onSubmit={handleSubmit} className={styles.form}>
+        <input
+          type="file"
+          name="uploaded-file"
+          accept="image/*"
+          className={styles.fileInput}
+          onChange={() => setError(null)}
+        />
+        <button 
+          type="submit" 
+          className={styles.submitButton}
+          disabled={loading}
+        >
+          {loading ? 'Processing...' : 'Submit'}
+        </button>
+      </form>
 
-        {error && (
-          <div className={styles.error}>
-            <h3>Error Details:</h3>
-            <pre>{error}</pre>
+      {error && (
+        <div className={styles.error}>
+          <h3>Error Details:</h3>
+          <p>{error}</p>
+          {error.includes('Unexpected token') && (
             <p className={styles.errorHint}>
-              If you see "Unexpected token", this means the API returned invalid data. 
+              If you see "Unexpected token", this means the API returned invalid data.
               Please check the server logs for more details.
             </p>
-          </div>
-        )}
-
-        {loading && (
-          <div className={styles.loading}>
-            Analyzing your image...
-          </div>
-        )}
-
-        {/* Debug output */}
-        <div className={styles.debug}>
-          <p>Current State:</p>
-          <p>Image: {image ? '✓' : '✗'}</p>
-          <p>Subject: {subject || 'Not set'}</p>
-          <p>Story: {story || 'Not set'}</p>
-          <p>Error: {error || 'None'}</p>
-          <p>Loading: {loading.toString()}</p>
+          )}
         </div>
+      )}
 
-        {/* Story section */}
-        {image && subject && story && (
-          <div className={styles.story}>
-            <img src={image} alt={`Uploaded ${subject}`} />
-            <div className={styles.storyContent}>
-              <div>
-                <h3>Analysis Result:</h3>
-                <p>Identified: {subject}</p>
-              </div>
-              <div>
-                <h3>Your Pet's Story:</h3>
-                <div className={styles.storyText}>
-                  {story.split('[Fun Fact:').map((part, index) => {
-                    if (index === 0) {
-                      return (
-                        <p key={index}>
-                          {part.replace('[Story]', '').trim()}
-                        </p>
-                      )
-                    } else {
-                      return (
-                        <React.Fragment key={index}>
-                          <div className={styles.funFact}>
-                            <strong>Fun Fact:</strong> 
-                            {part.replace(']', '').trim()}
-                          </div>
-                        </React.Fragment>
-                      )
-                    }
-                  })}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+      {loading && (
+        <div className={styles.loading}>
+          Processing your image...
+        </div>
+      )}
+
+      {subject && story && (
+        <div className={styles.result}>
+          <h2>Analysis Result:</h2>
+          {image && <img src={image} alt={subject} className={styles.previewImage} />}
+          <p><strong>Subject:</strong> {subject}</p>
+          <p><strong>Story:</strong> {story}</p>
+        </div>
+      )}
+
+      <div className={styles.debug}>
+        <h3>Current State:</h3>
+        <p>Image: {image ? '✓' : '✗'}</p>
+        <p>Subject: {subject || 'Not set'}</p>
+        <p>Story: {story ? '✓' : 'Not set'}</p>
+        <p>Error: {error || 'None'}</p>
+        <p>Loading: {loading.toString()}</p>
       </div>
     </div>
   )
