@@ -77,8 +77,7 @@ export default function SmartPetPlus() {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h1>Smart Pet Plus</h1>
-        <p>Upload a Picture of Your Pet (or Any Animal)</p>
+        <h1>Upload a Picture of Your Pet (or Any Animal)</h1>
         <p>We'll identify what it is, then tell you a heartwarming story!</p>
       </div>
 
@@ -99,16 +98,20 @@ export default function SmartPetPlus() {
         </button>
       </form>
 
+      {subject && story && (
+        <div className={styles.result}>
+          <h2>Analysis Result:</h2>
+          {image && <img src={image} alt={subject} className={styles.previewImage} />}
+          <p><strong>Identified:</strong> {subject}</p>
+          <p><strong>Your Pet's Story:</strong></p>
+          <p className={styles.story}>{story}</p>
+        </div>
+      )}
+
       {error && (
         <div className={styles.error}>
           <h3>Error Details:</h3>
           <p>{error}</p>
-          {error.includes('Unexpected token') && (
-            <p className={styles.errorHint}>
-              If you see "Unexpected token", this means the API returned invalid data.
-              Please check the server logs for more details.
-            </p>
-          )}
         </div>
       )}
 
@@ -117,24 +120,6 @@ export default function SmartPetPlus() {
           Processing your image...
         </div>
       )}
-
-      {subject && story && (
-        <div className={styles.result}>
-          <h2>Analysis Result:</h2>
-          {image && <img src={image} alt={subject} className={styles.previewImage} />}
-          <p><strong>Subject:</strong> {subject}</p>
-          <p><strong>Story:</strong> {story}</p>
-        </div>
-      )}
-
-      <div className={styles.debug}>
-        <h3>Current State:</h3>
-        <p>Image: {image ? '✓' : '✗'}</p>
-        <p>Subject: {subject || 'Not set'}</p>
-        <p>Story: {story ? '✓' : 'Not set'}</p>
-        <p>Error: {error || 'None'}</p>
-        <p>Loading: {loading.toString()}</p>
-      </div>
     </div>
   )
 } 
