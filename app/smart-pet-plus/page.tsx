@@ -113,6 +113,11 @@ export default function SmartPetPlus() {
       {subject && story && (
         <div className={styles.result}>
           <div className={styles.resultContent}>
+            {image && (
+              <div className={styles.imageContainer}>
+                <img src={image} alt={subject} className={styles.previewImage} />
+              </div>
+            )}
             <p className={styles.subject}>Subject: {subject}</p>
             <div className={styles.storySection}>
               {story.split('[Story]')[1].split('[Fun Fact:')[0].trim()}

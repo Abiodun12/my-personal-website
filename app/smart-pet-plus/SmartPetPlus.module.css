@@ -105,6 +105,23 @@
   border-left: 2px solid #00ff00;
 }
 
+.imageContainer {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid rgba(0, 255, 0, 0.2);
+  padding-bottom: 1rem;
+}
+
+.previewImage {
+  max-width: 100%;
+  max-height: 300px;
+  width: auto;
+  height: auto;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 255, 0, 0.3);
+}
+
 @keyframes blink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0; }
@@ -113,5 +130,9 @@
 @media (max-width: 768px) {
   .container {
     padding: 1rem;
+  }
+  
+  .previewImage {
+    max-height: 200px;
   }
 }
