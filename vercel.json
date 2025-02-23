@@ -1,7 +1,7 @@
 {
   "version": 2,
   "functions": {
-    "api/smart-pet-plus/*.ts": {
+    "app/api/**/*.ts": {
       "maxDuration": 60
     }
   }
