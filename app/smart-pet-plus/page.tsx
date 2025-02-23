@@ -58,12 +58,16 @@ export default function SmartPetPlus() {
       setImage(URL.createObjectURL(file))
       setSubject(data.result.subject)
       setStory(data.result.story)
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Error:', err)
-      if (err.name === 'AbortError') {
-        setError('Request timed out. Please try again.')
+      if (err instanceof Error) {
+        if (err.name === 'AbortError') {
+          setError('Request timed out. Please try again.')
+        } else {
+          setError(err.message)
+        }
       } else {
-        setError(err instanceof Error ? err.message : 'An unexpected error occurred')
+        setError('An unexpected error occurred')
       }
     } finally {
       setLoading(false)
