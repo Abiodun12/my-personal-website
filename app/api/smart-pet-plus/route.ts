@@ -64,9 +64,9 @@ export async function POST(request: Request) {
 
       return NextResponse.json(responseData)
 
-    } catch (fetchError) {
+    } catch (fetchError: unknown) {
       clearTimeout(timeoutId)
-      if (fetchError.name === 'AbortError') {
+      if (fetchError instanceof Error && fetchError.name === 'AbortError') {
         return NextResponse.json({
           success: false,
           error: 'Request timed out. Please try again.',

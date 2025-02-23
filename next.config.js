@@ -2,9 +2,6 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
-  experimental: {
-    appDir: true,
-  },
   async headers() {
     return [
       {
@@ -17,7 +14,7 @@ const nextConfig = {
         ],
       },
     ]
-  },
+  }
 }
 
 module.exports = nextConfig 
