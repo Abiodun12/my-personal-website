@@ -1,36 +1,59 @@
 .container {
   width: 100%;
-  max-width: 800px;
-  margin: 0 auto;
+  height: 100vh;
   padding: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1a1a1a;
+}
+
+.terminal {
+  width: 100%;
+  max-width: 800px;
+  background: #000000;
+  border-radius: 8px;
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+  overflow: hidden;
+}
+
+.terminalHeader {
+  background: #2d2d2d;
+  padding: 8px;
+  display: flex;
+  gap: 8px;
+}
+
+.terminalButton {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.close { background: #ff5f56; }
+.minimize { background: #ffbd2e; }
+.maximize { background: #27c93f; }
+
+.terminalContent {
+  padding: 1.5rem;
   color: #00ff00;
   font-family: 'Courier New', monospace;
+  font-size: 14px;
+  line-height: 1.6;
 }
 
 .header {
-  text-align: center;
-  margin-bottom: 2rem;
-}
-
-.header h1 {
-  color: #00ff00;
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
-}
-
-.header p {
-  color: #00ff00;
-  opacity: 0.9;
+  margin: 1rem 0;
 }
 
 .form {
+  margin: 1rem 0;
   display: flex;
-  flex-direction: column;
   gap: 1rem;
-  margin-bottom: 2rem;
 }
 
 .fileInput {
+  flex: 1;
   background: transparent;
   border: 1px solid #00ff00;
   color: #00ff00;
@@ -39,26 +62,15 @@
   cursor: pointer;
 }
 
-.fileInput::-webkit-file-upload-button {
+.submitButton {
   background: #00ff00;
   color: black;
   border: none;
   padding: 0.5rem 1rem;
   border-radius: 4px;
   cursor: pointer;
-  margin-right: 1rem;
-}
-
-.submitButton {
-  background: #00ff00;
-  color: black;
-  border: none;
-  padding: 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: bold;
   font-family: 'Courier New', monospace;
-  transition: opacity 0.2s;
+  font-weight: bold;
 }
 
 .submitButton:disabled {
@@ -66,142 +78,58 @@
   cursor: not-allowed;
 }
 
-.result {
-  background: rgba(0, 255, 0, 0.1);
-  border: 1px solid #00ff00;
-  padding: 1.5rem;
-  border-radius: 4px;
-  margin-top: 2rem;
-}
-
-.result h2 {
+.loading {
   color: #00ff00;
-  margin-bottom: 1rem;
-}
-
-.previewImage {
-  max-width: 100%;
-  height: auto;
-  border-radius: 4px;
   margin: 1rem 0;
-}
-
-.story {
-  white-space: pre-wrap;
-  line-height: 1.6;
+  animation: blink 1s infinite;
 }
 
 .error {
-  background: rgba(255, 0, 0, 0.1);
-  border: 1px solid #ff0000;
-  color: #ff0000;
+  color: #ff5f56;
+  margin: 1rem 0;
+}
+
+.result {
+  margin: 1rem 0;
+}
+
+.resultContent {
+  margin-top: 0.5rem;
   padding: 1rem;
+  background: rgba(0, 255, 0, 0.1);
   border-radius: 4px;
-  margin-top: 1rem;
 }
 
-.loading {
+.subject {
   color: #00ff00;
-  text-align: center;
-  padding: 1rem;
-  animation: pulse 1.5s infinite;
-}
-
-@keyframes pulse {
-  0% { opacity: 0.6; }
-  50% { opacity: 1; }
-  100% { opacity: 0.6; }
-}
-
-.debug {
-  display: none; /* Hide debug info */
-}
-
-.story {
-  margin-top: 2rem;
-  padding: 1rem;
-  background: rgba(0, 255, 0, 0.05);
-  border: 1px solid var(--accent-color, #00ff00);
-  border-radius: 8px;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 2rem;
-}
-
-.story img {
-  width: 100%;
-  max-width: 400px;
-  height: auto;
-  border-radius: 12px;
-  margin: 0 auto;
-  object-fit: cover;
-  border: 2px solid var(--accent-color, #00ff00);
-}
-
-.storyContent {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  color: var(--text-color, #00ff00);
-  padding: 1rem;
-}
-
-.storyContent h3 {
-  border-bottom: 2px solid var(--accent-color);
-  padding-bottom: 0.5rem;
+  font-weight: bold;
   margin-bottom: 1rem;
 }
 
-.storyContent p {
-  font-size: clamp(0.9rem, 2vw, 1rem);
-  line-height: 1.8;
-  opacity: 0.9;
+.storySection {
   white-space: pre-wrap;
-}
-
-.storyContent strong {
-  color: var(--accent-color, #00ff00);
-  display: block;
-  margin-bottom: 0.5rem;
-}
-
-.storyText {
+  margin-bottom: 1rem;
   line-height: 1.6;
-  margin-top: 1rem;
-}
-
-.storyText p {
-  margin-bottom: 1.5rem;
 }
 
 .funFact {
-  padding: 1rem;
-  background: rgba(0, 255, 0, 0.1);
-  border-left: 3px solid var(--accent-color);
-  margin: 1.5rem 0;
+  padding: 0.5rem;
+  background: rgba(0, 255, 0, 0.05);
+  border-left: 2px solid #00ff00;
 }
 
-@media (min-width: 768px) {
-  .story {
-    grid-template-columns: minmax(300px, 1fr) 2fr;
-  }
-  
-  .story img {
-    margin: 0;
-  }
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
   .container {
-    padding: 10px;
-  }
-  
-  .content {
     padding: 1rem;
   }
   
-  .fileInput,
-  .submitButton {
-    padding: 0.6rem;
+  .form {
+    flex-direction: column;
   }
+}
 }

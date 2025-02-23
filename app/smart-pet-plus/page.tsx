@@ -76,50 +76,65 @@ export default function SmartPetPlus() {
 
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
-        <h1>Upload a Picture of Your Pet (or Any Animal)</h1>
-        <p>We'll identify what it is, then tell you a heartwarming story!</p>
+      <div className={styles.terminal}>
+        <div className={styles.terminalHeader}>
+          <div className={styles.terminalButton + ' ' + styles.close}></div>
+          <div className={styles.terminalButton + ' ' + styles.minimize}></div>
+          <div className={styles.terminalButton + ' ' + styles.maximize}></div>
+        </div>
+        
+        <div className={styles.terminalContent}>
+          <p>$ cat smart-pet-plus.txt</p>
+          <div className={styles.header}>
+            <p>Upload a Picture of Your Pet (or Any Animal)</p>
+            <p>We'll identify what it is, then tell you a heartwarming story!</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className={styles.form}>
+            <input
+              type="file"
+              name="uploaded-file"
+              accept="image/*"
+              className={styles.fileInput}
+              onChange={() => setError(null)}
+            />
+            <button 
+              type="submit" 
+              className={styles.submitButton}
+              disabled={loading}
+            >
+              {loading ? 'Processing...' : 'Submit'}
+            </button>
+          </form>
+
+          {loading && (
+            <div className={styles.loading}>
+              $ analyzing image...
+            </div>
+          )}
+
+          {error && (
+            <div className={styles.error}>
+              <p>Error: {error}</p>
+            </div>
+          )}
+
+          {subject && story && (
+            <div className={styles.result}>
+              <p>$ cat analysis_result.txt</p>
+              <div className={styles.resultContent}>
+                <p className={styles.subject}>Subject: {subject}</p>
+                <div className={styles.storySection}>
+                  {story.split('[Story]')[1].split('[Fun Fact:')[0].trim()}
+                </div>
+                <div className={styles.funFact}>
+                  Fun Fact: {story.split('[Fun Fact:')[1].replace(']', '').trim()}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
-
-      <form onSubmit={handleSubmit} className={styles.form}>
-        <input
-          type="file"
-          name="uploaded-file"
-          accept="image/*"
-          className={styles.fileInput}
-          onChange={() => setError(null)}
-        />
-        <button 
-          type="submit" 
-          className={styles.submitButton}
-          disabled={loading}
-        >
-          {loading ? 'Processing...' : 'Submit'}
-        </button>
-      </form>
-
-      {subject && story && (
-        <div className={styles.result}>
-          <h2>Analysis Result:</h2>
-          {image && <img src={image} alt={subject} className={styles.previewImage} />}
-          <p><strong>Identified:</strong> {subject}</p>
-          <p><strong>Your Pet's Story:</strong></p>
-          <p className={styles.story}>{story}</p>
-        </div>
-      )}
-
-      {error && (
-        <div className={styles.error}>
-          <h3>Error Details:</h3>
-          <p>{error}</p>
-        </div>
-      )}
-
-      {loading && (
-        <div className={styles.loading}>
-          Processing your image...
-        </div>
-      )}
     </div>
   )
 } 
