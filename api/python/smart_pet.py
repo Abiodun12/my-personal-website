@@ -36,11 +36,13 @@ def analyze_image_route():
 
     try:
         if not request.is_json:
-            return jsonify({
+            response = jsonify({
                 "success": False,
                 "error": "Request must be JSON",
                 "result": None
-            }), 400
+            })
+            response.headers['Content-Type'] = 'application/json'
+            return response, 400
 
         data = request.get_json()
         
@@ -64,24 +66,26 @@ def analyze_image_route():
         # Analyze image
         try:
             result = analyze_image(image_data)
-            return jsonify({
-                "success": True,
-                "error": None,
-                "result": result
-            })
+            response = jsonify(result)
+            response.headers['Content-Type'] = 'application/json'
+            return response
         except Exception as e:
-            return jsonify({
+            response = jsonify({
                 "success": False,
                 "error": str(e),
                 "result": None
-            }), 500
+            })
+            response.headers['Content-Type'] = 'application/json'
+            return response, 500
 
     except Exception as e:
-        return jsonify({
+        response = jsonify({
             "success": False,
             "error": str(e),
             "result": None
-        }), 500
+        })
+        response.headers['Content-Type'] = 'application/json'
+        return response, 500
 
 @app.route('/health', methods=['GET'])
 def health_check() -> dict:

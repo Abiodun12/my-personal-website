@@ -29,10 +29,16 @@ export default function SmartPetPlus() {
     }
 
     try {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 60000) // 60 second timeout
+
       const response = await fetch('/api/smart-pet-plus', {
         method: 'POST',
         body: formData,
+        signal: controller.signal
       })
+
+      clearTimeout(timeoutId)
 
       const contentType = response.headers.get('content-type')
       if (!contentType || !contentType.includes('application/json')) {
@@ -54,7 +60,11 @@ export default function SmartPetPlus() {
       setStory(data.result.story)
     } catch (err) {
       console.error('Error:', err)
-      setError(err instanceof Error ? err.message : 'An unexpected error occurred')
+      if (err.name === 'AbortError') {
+        setError('Request timed out. Please try again.')
+      } else {
+        setError(err instanceof Error ? err.message : 'An unexpected error occurred')
+      }
     } finally {
       setLoading(false)
     }
