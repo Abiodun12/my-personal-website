@@ -1,9 +1,11 @@
 'use client'
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { Cursor } from './Cursor'
 import { TerminalLink } from './TerminalLink'
 import { CommandMenu } from './CommandMenu'
 import { ParticleEffects } from './ParticleEffects'
+
+const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024;
 
 interface Command {
   command: string;
@@ -33,6 +35,7 @@ export function InteractiveTerminal({
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [triggerParticles, setTriggerParticles] = useState(false);
   const [effectsEnabled, setEffectsEnabled] = useState(true);
+  const [performanceMode, setPerformanceMode] = useState(isDesktop);
 
   const handleNavigation = (path: string) => {
     window.location.href = path;
@@ -68,7 +71,11 @@ export function InteractiveTerminal({
         {'>'}  <span 
           className="terminal-link"
           onClick={() => handleCommand('effects ' + (effectsEnabled ? 'off' : 'on'))}
-        >EFFECTS {effectsEnabled ? 'OFF' : 'ON'}</span> : Toggle visual effects
+        >EFFECTS {effectsEnabled ? 'OFF' : 'ON'}</span> : Toggle visual effects<br/>
+        {'>'}  <span 
+          className="terminal-link"
+          onClick={() => handleCommand('performance standard')}
+        >PERFORMANCE</span> : Adjust performance (standard|high|max)
       </div>
     ),
     about: () => {
@@ -113,10 +120,27 @@ export function InteractiveTerminal({
           EMAIL
         </TerminalLink>
       </div>
-    )
+    ),
+    performance: (args = '') => {
+      if (args.trim().toLowerCase() === 'high') {
+        setPerformanceMode(true);
+        return 'Performance mode enabled - reduces visual effects for better performance';
+      } else if (args.trim().toLowerCase() === 'max') {
+        setPerformanceMode(true);
+        setEffectsEnabled(false);
+        return 'Maximum performance mode enabled - most visual effects disabled';
+      } else if (args.trim().toLowerCase() === 'standard') {
+        setPerformanceMode(false);
+        setEffectsEnabled(true);
+        return 'Standard mode enabled - full visual effects';
+      }
+      return `Usage: performance standard|high|max (currently ${
+        !effectsEnabled ? 'max' : performanceMode ? 'high' : 'standard'
+      })`;
+    }
   };
 
-  const handleCommand = (cmd: string) => {
+  const handleCommand = useCallback((cmd: string) => {
     const parts = cmd.trim().split(' ');
     const command = parts[0].toLowerCase();
     const args = parts.slice(1).join(' ');
@@ -126,18 +150,15 @@ export function InteractiveTerminal({
     if (cmd.trim()) {
       setCommandHistory(prev => [...prev, cmd]);
       
-      // Trigger particle effect
-      if (effectsEnabled) {
+      if (effectsEnabled && (!performanceMode || command === 'performance')) {
         setTriggerParticles(prev => !prev);
       }
     }
 
     if (command in commands) {
-      // Pass arguments to command function if it accepts them
-      if (command === 'effects') {
-        output = commands.effects(args);
+      if (command === 'effects' || command === 'performance') {
+        output = commands[command](args);
       } else {
-        // Call without args for other commands
         const result = commands[command]();
         output = result !== undefined ? result : `Executed: ${command}`;
       }
@@ -150,9 +171,8 @@ export function InteractiveTerminal({
     }
     setInput('');
     setHistoryIndex(-1);
-  };
+  }, [effectsEnabled, performanceMode, commands]);
 
-  // Menu command definitions
   const menuCommands = [
     { 
       key: 'ABOUT', 
@@ -183,6 +203,11 @@ export function InteractiveTerminal({
       key: 'EFFECTS ' + (effectsEnabled ? 'OFF' : 'ON'), 
       description: 'Toggle visual effects', 
       action: () => handleCommand('effects ' + (effectsEnabled ? 'off' : 'on'))
+    },
+    { 
+      key: 'PERFORMANCE MODE', 
+      description: performanceMode ? 'Switch to standard mode' : 'Enable high performance mode',
+      action: () => handleCommand(`performance ${performanceMode ? 'standard' : 'high'}`)
     }
   ];
 
@@ -223,13 +248,27 @@ export function InteractiveTerminal({
 
   return (
     <div 
-      className="interactive-terminal"
+      className={`interactive-terminal ${performanceMode ? 'performance-mode' : ''}`}
       ref={terminalRef}
       onClick={() => inputRef.current?.focus()}
     >
       <CommandMenu commands={menuCommands} />
       
-      <ParticleEffects enabled={effectsEnabled} trigger={triggerParticles} />
+      <ParticleEffects 
+        enabled={effectsEnabled} 
+        trigger={triggerParticles} 
+        lowPerformanceMode={performanceMode}
+      />
+      
+      <div 
+        className="performance-toggle"
+        onClick={() => setPerformanceMode(prev => !prev)}
+        role="button"
+        tabIndex={0}
+        aria-label={`${performanceMode ? 'Disable' : 'Enable'} performance mode`}
+      >
+        {performanceMode ? '🚀 Performance Mode' : '✨ Standard Mode'}
+      </div>
       
       {initialOutput && <div className="terminal-initial">{initialOutput}</div>}
       

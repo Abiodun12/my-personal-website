@@ -1,9 +1,10 @@
 'use client'
-import React, { useEffect, useState, useRef, useCallback } from 'react'
+import React, { useEffect, useState, useRef, useCallback, memo } from 'react'
 
 interface ParticleEffectsProps {
   enabled?: boolean;
   trigger?: boolean;
+  lowPerformanceMode?: boolean;
 }
 
 interface Particle {
@@ -17,12 +18,19 @@ interface Particle {
   direction: number;
 }
 
-export function ParticleEffects({ enabled = true, trigger = false }: ParticleEffectsProps) {
+// Memoize the component to prevent unnecessary re-renders
+export const ParticleEffects = memo(({ 
+  enabled = true, 
+  trigger = false,
+  lowPerformanceMode = false
+}: ParticleEffectsProps) => {
   const [particles, setParticles] = useState<Particle[]>([]);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<number | null>(null);
   const particleIdRef = useRef(0);
+  const lastUpdateTimeRef = useRef(0);
+  const FPS_LIMIT = 30; // Limit animation frames
   
   // Check for reduced motion preference
   useEffect(() => {
@@ -35,7 +43,7 @@ export function ParticleEffects({ enabled = true, trigger = false }: ParticleEff
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
   
-  // Create particles on trigger or command
+  // Create particles on trigger or command - optimized
   const createParticles = useCallback((x?: number, y?: number) => {
     if (!enabled || prefersReducedMotion) return;
     
@@ -47,18 +55,21 @@ export function ParticleEffects({ enabled = true, trigger = false }: ParticleEff
     const centerY = y ?? container.clientHeight / 2;
     
     const newParticles: Particle[] = [];
-    const particleCount = Math.min(15, window.innerWidth > 768 ? 15 : 8);
+    // Reduce particle count on lower performance mode
+    const particleCount = lowPerformanceMode 
+      ? Math.min(5, window.innerWidth > 768 ? 5 : 3) 
+      : Math.min(15, window.innerWidth > 768 ? 15 : 8);
     
     for (let i = 0; i < particleCount; i++) {
       const direction = Math.random() * Math.PI * 2;
-      const speed = 1 + Math.random() * 3;
-      const maxLife = 30 + Math.random() * 30;
+      const speed = lowPerformanceMode ? 1 + Math.random() * 2 : 1 + Math.random() * 3;
+      const maxLife = lowPerformanceMode ? 20 + Math.random() * 20 : 30 + Math.random() * 30;
       
       newParticles.push({
         id: particleIdRef.current++,
         x: centerX,
         y: centerY,
-        size: 1 + Math.random() * 3,
+        size: 1 + Math.random() * 2,
         speed,
         life: 0,
         maxLife,
@@ -67,16 +78,23 @@ export function ParticleEffects({ enabled = true, trigger = false }: ParticleEff
     }
     
     setParticles(prev => [...prev, ...newParticles]);
-  }, [enabled, prefersReducedMotion]);
+  }, [enabled, prefersReducedMotion, lowPerformanceMode]);
   
-  // Handle mouse/touch events to create particles
+  // Optimize mouse/touch events with throttling
   useEffect(() => {
     if (!enabled || prefersReducedMotion) return;
     
     const container = containerRef.current;
     if (!container) return;
     
+    let isThrottled = false;
+    
     const handleClick = (e: MouseEvent | TouchEvent) => {
+      if (isThrottled) return;
+      
+      isThrottled = true;
+      setTimeout(() => { isThrottled = false; }, 200);
+      
       let x, y;
       
       if (e instanceof MouseEvent) {
@@ -104,28 +122,37 @@ export function ParticleEffects({ enabled = true, trigger = false }: ParticleEff
     };
   }, [enabled, prefersReducedMotion, createParticles]);
   
-  // Create particles on trigger prop change
+  // Create particles on trigger prop change - with throttling
   useEffect(() => {
-    if (trigger) {
-      createParticles();
+    if (trigger && !isNaN(+trigger)) {
+      const now = Date.now();
+      if (now - lastUpdateTimeRef.current > 100) { // Throttle to max 10 triggers per second
+        createParticles();
+        lastUpdateTimeRef.current = now;
+      }
     }
   }, [trigger, createParticles]);
   
-  // Animate particles
+  // Animate particles with frame limiting
   useEffect(() => {
     if (!enabled || prefersReducedMotion || particles.length === 0) return;
     
-    const animate = () => {
-      setParticles(prev => 
-        prev
-          .map(p => ({
-            ...p,
-            x: p.x + Math.cos(p.direction) * p.speed,
-            y: p.y + Math.sin(p.direction) * p.speed,
-            life: p.life + 1
-          }))
-          .filter(p => p.life < p.maxLife)
-      );
+    const animate = (timestamp: number) => {
+      // Limit frame rate for better performance
+      if (timestamp - lastUpdateTimeRef.current >= 1000 / FPS_LIMIT) {
+        setParticles(prev => 
+          prev
+            .map(p => ({
+              ...p,
+              x: p.x + Math.cos(p.direction) * p.speed,
+              y: p.y + Math.sin(p.direction) * p.speed,
+              life: p.life + 1
+            }))
+            .filter(p => p.life < p.maxLife)
+        );
+        
+        lastUpdateTimeRef.current = timestamp;
+      }
       
       animationRef.current = requestAnimationFrame(animate);
     };
@@ -139,7 +166,7 @@ export function ParticleEffects({ enabled = true, trigger = false }: ParticleEff
     };
   }, [particles, enabled, prefersReducedMotion]);
   
-  if (!enabled || prefersReducedMotion) {
+  if (!enabled || prefersReducedMotion || particles.length === 0) {
     return null;
   }
   
@@ -159,7 +186,8 @@ export function ParticleEffects({ enabled = true, trigger = false }: ParticleEff
               height: `${particle.size}px`,
               opacity,
               transform: `scale(${1 - particle.life / particle.maxLife})`,
-              filter: `blur(${particle.size / 3}px)`
+              filter: lowPerformanceMode ? 'none' : `blur(${particle.size / 3}px)`,
+              willChange: 'transform, opacity'
             }}
             aria-hidden="true"
           />
@@ -167,4 +195,6 @@ export function ParticleEffects({ enabled = true, trigger = false }: ParticleEff
       })}
     </div>
   );
-} 
+});
+
+ParticleEffects.displayName = 'ParticleEffects'; 
