@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, FormEvent } from 'react';
 import Image from 'next/image';
 import ErrorHandler from '../../components/ErrorHandler';
 
@@ -15,7 +15,7 @@ export default function SmartPetPlus() {
     setIsMobile(window.innerWidth <= 768);
   }, []);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
@@ -54,9 +54,10 @@ export default function SmartPetPlus() {
       }
       
       setAnalysis(data);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Error analyzing image:', err);
-      setError(err.message || 'Failed to analyze image');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to analyze image';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
