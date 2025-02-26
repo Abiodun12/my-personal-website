@@ -5,8 +5,8 @@ import ErrorHandler from '../../components/ErrorHandler';
 
 export default function SmartPetPlus() {
   const [imageUrl, setImageUrl] = useState('');
-  const [analysis, setAnalysis] = useState(null);
-  const [error, setError] = useState(null);
+  const [analysis, setAnalysis] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
