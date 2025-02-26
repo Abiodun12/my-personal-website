@@ -109,10 +109,14 @@ export default function SmartPetPlus() {
                 `Identified as: ${subject}`}
             </p>
             <div className={styles.storySection}>
-              {story.split('[Story]')[1].split('[Fun Fact:')[0].trim()}
+              {story.includes('[Story]') 
+                ? story.split('[Story]')[1].split('[Fun Fact:')[0].trim()
+                : story.split('[Fun Fact:')[0].trim()}
             </div>
             <div className={styles.funFact}>
-              Fun Fact: {story.split('[Fun Fact:')[1].replace(']', '').trim()}
+              {story.includes('[Fun Fact:') 
+                ? `Fun Fact: ${story.split('[Fun Fact:')[1].replace(']', '').trim()}`
+                : 'Fun Fact: This is a fascinating subject!'}
             </div>
           </div>
         </div>
