@@ -1,74 +1,71 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import styles from './SmartPetPlus.module.css'
-import React from 'react'
 
 export default function SmartPetPlus() {
   const [image, setImage] = useState<string | null>(null)
-  const [subject, setSubject] = useState<string | null>(null)
-  const [story, setStory] = useState<string | null>(null)
-  const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [subject, setSubject] = useState('')
+  const [story, setStory] = useState('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
-    setError(null)
-    setImage(null)
-    setSubject(null)
-    setStory(null)
     
-    const formData = new FormData(e.currentTarget)
-    const file = formData.get('uploaded-file') as File
-    
-    if (!file) {
-      setError('Please select a file')
-      setLoading(false)
+    if (!fileInputRef.current?.files?.[0]) {
+      setError('Please select an image to upload')
       return
     }
-
+    
+    const file = fileInputRef.current.files[0]
+    
+    // Image preview for user feedback
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      setImage(e.target?.result as string)
+    }
+    reader.readAsDataURL(file)
+    
+    setLoading(true)
+    setError(null)
+    
     try {
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 60000) // 60 second timeout
-
+      // Convert file to base64
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader()
+        reader.readAsDataURL(file)
+        reader.onload = () => {
+          const result = reader.result as string
+          const base64Data = result.split(',')[1]
+          resolve(base64Data)
+        }
+        reader.onerror = reject
+      })
+      
+      // Send to API
       const response = await fetch('/api/smart-pet-plus', {
         method: 'POST',
-        body: formData,
-        signal: controller.signal
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          'uploaded-file': base64
+        })
       })
-
-      clearTimeout(timeoutId)
-
-      const contentType = response.headers.get('content-type')
-      if (!contentType || !contentType.includes('application/json')) {
-        throw new Error('Invalid response format from server')
-      }
-
+      
       const data = await response.json()
-
+      
       if (!data.success) {
-        throw new Error(data.error || 'Failed to process image')
+        throw new Error(data.error || 'Failed to analyze image')
       }
-
-      if (!data.result || !data.result.subject || !data.result.story) {
-        throw new Error('Invalid response data from server')
-      }
-
-      setImage(URL.createObjectURL(file))
+      
       setSubject(data.result.subject)
       setStory(data.result.story)
-    } catch (err: unknown) {
-      console.error('Error:', err)
-      if (err instanceof Error) {
-        if (err.name === 'AbortError') {
-          setError('Request timed out. Please try again.')
-        } else {
-          setError(err.message)
-        }
-      } else {
-        setError('An unexpected error occurred')
-      }
+      
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred')
     } finally {
       setLoading(false)
     }
@@ -77,13 +74,14 @@ export default function SmartPetPlus() {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h1>Upload a Picture of Your Pet (or Any Animal)</h1>
-        <p>We'll identify what it is, then tell you a heartwarming story!</p>
+        <h1>Smart Pet Plus - Universal Image Analyzer</h1>
+        <p>Upload any image - we'll identify what it is and tell you a creative story about it!</p>
       </div>
 
       <form onSubmit={handleSubmit} className={styles.form}>
         <input
           type="file"
+          ref={fileInputRef}
           name="uploaded-file"
           accept="image/*"
           className={styles.fileInput}
@@ -94,7 +92,7 @@ export default function SmartPetPlus() {
           className={styles.submitButton}
           disabled={loading}
         >
-          {loading ? 'Processing...' : 'Submit'}
+          {loading ? 'Processing...' : 'Analyze Image'}
         </button>
       </form>
 
@@ -118,7 +116,11 @@ export default function SmartPetPlus() {
                 <img src={image} alt={subject} className={styles.previewImage} />
               </div>
             )}
-            <p className={styles.subject}>Subject: {subject}</p>
+            <p className={styles.subject}>
+              {subject.includes('dog') || subject.includes('cat') || subject.includes('bird') ? 
+                `Pet Identified: ${subject}` : 
+                `Identified as: ${subject}`}
+            </p>
             <div className={styles.storySection}>
               {story.split('[Story]')[1].split('[Fun Fact:')[0].trim()}
             </div>

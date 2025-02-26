@@ -121,7 +121,7 @@ def generate_story_with_deepseek(subject):
             "messages": [
                 {
                     "role": "system",
-                    "content": "You are a creative storyteller who writes engaging stories about animals."
+                    "content": "You are a creative storyteller who writes engaging stories about anything in images."
                 },
                 {
                     "role": "user",
@@ -138,14 +138,14 @@ def generate_story_with_deepseek(subject):
             if not story.startswith('[Story]'):
                 story = f"[Story] {story}"
             if '[Fun Fact:' not in story:
-                story = f"{story} [Fun Fact: {clean_subject}s have fascinating abilities!]"
+                story = f"{story} [Fun Fact: {clean_subject}s are fascinating in many ways!]"
             return story
         else:
-            return f"[Story] A curious {clean_subject} explored their world today, bringing smiles to everyone around them. [Fun Fact: {clean_subject}s are known for their remarkable intelligence and adaptability!]"
+            return f"[Story] A {clean_subject} had an incredible adventure today. Everyone was amazed by its presence. It brought joy to all who encountered it. [Fun Fact: {clean_subject}s can be found in many places around the world!]"
 
     except Exception as e:
         print(f"Story generation error: {str(e)}")
-        return f"[Story] A curious {clean_subject} explored their world today, bringing smiles to everyone around them. [Fun Fact: {clean_subject}s are known for their remarkable intelligence and adaptability!]"
+        return f"[Story] A {clean_subject} had an incredible adventure today. Everyone was amazed by its presence. It brought joy to all who encountered it. [Fun Fact: {clean_subject}s can be found in many places around the world!]"
 
 def analyze_image(image_data):
     """Analyze image using DashScope for subject identification, then DeepSeek for story"""
@@ -153,13 +153,13 @@ def analyze_image(image_data):
         print("Starting image analysis...")
         image_base64 = base64.b64encode(image_data).decode('utf-8')
         
-        # Use DashScope for image analysis
+        # Enhanced prompt for better subject identification and breed detection
         messages = [
             {
                 "role": "user",
                 "content": [
                     {"image": f"data:image/jpeg;base64,{image_base64}"},
-                    {"text": "What animal or pet is shown in this image? Give me a specific but concise answer."}
+                    {"text": "What exactly is in this image? If it's an animal, please identify the specific breed or species. Be precise but concise with your answer (1-5 words)."}
                 ]
             }
         ]
@@ -174,6 +174,10 @@ def analyze_image(image_data):
             # Extract and clean subject
             subject = response.output.choices[0].message.content[0].get('text', '').strip()
             print(f"Extracted subject: {subject}")
+            
+            # Clean up the subject for better story generation
+            subject = re.sub(r"^(a|an|the)\s+", "", subject, flags=re.IGNORECASE)
+            subject = subject.split('.')[0].split(',')[0].strip()
             
             if not subject:
                 return {
