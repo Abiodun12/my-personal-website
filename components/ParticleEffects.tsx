@@ -1,10 +1,11 @@
 'use client'
 import React, { useEffect, useState, useRef, useCallback, memo } from 'react'
 
-interface ParticleEffectsProps {
+export interface ParticleEffectsProps {
   enabled?: boolean;
   trigger?: boolean;
   lowPerformanceMode?: boolean;
+  maxParticles?: number;
 }
 
 interface Particle {
@@ -22,7 +23,8 @@ interface Particle {
 export const ParticleEffects = memo(({ 
   enabled = true, 
   trigger = false,
-  lowPerformanceMode = false
+  lowPerformanceMode = false,
+  maxParticles = 15
 }: ParticleEffectsProps) => {
   const [particles, setParticles] = useState<Particle[]>([]);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
@@ -30,7 +32,7 @@ export const ParticleEffects = memo(({
   const animationRef = useRef<number | null>(null);
   const particleIdRef = useRef(0);
   const lastUpdateTimeRef = useRef(0);
-  const FPS_LIMIT = 30; // Limit animation frames
+  const FPS_LIMIT = lowPerformanceMode ? 20 : 30; // Even lower FPS for performance mode
   
   // Check for reduced motion preference
   useEffect(() => {
@@ -56,14 +58,15 @@ export const ParticleEffects = memo(({
     
     const newParticles: Particle[] = [];
     // Reduce particle count on lower performance mode
-    const particleCount = lowPerformanceMode 
-      ? Math.min(5, window.innerWidth > 768 ? 5 : 3) 
-      : Math.min(15, window.innerWidth > 768 ? 15 : 8);
+    const particleCount = Math.min(
+      maxParticles,
+      lowPerformanceMode ? 3 : (window.innerWidth > 768 ? 8 : 5)
+    );
     
     for (let i = 0; i < particleCount; i++) {
       const direction = Math.random() * Math.PI * 2;
       const speed = lowPerformanceMode ? 1 + Math.random() * 2 : 1 + Math.random() * 3;
-      const maxLife = lowPerformanceMode ? 20 + Math.random() * 20 : 30 + Math.random() * 30;
+      const maxLife = lowPerformanceMode ? 15 + Math.random() * 10 : 20 + Math.random() * 20;
       
       newParticles.push({
         id: particleIdRef.current++,
@@ -78,7 +81,7 @@ export const ParticleEffects = memo(({
     }
     
     setParticles(prev => [...prev, ...newParticles]);
-  }, [enabled, prefersReducedMotion, lowPerformanceMode]);
+  }, [enabled, prefersReducedMotion, lowPerformanceMode, maxParticles]);
   
   // Optimize mouse/touch events with throttling
   useEffect(() => {

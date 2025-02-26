@@ -320,7 +320,7 @@ export function InteractiveTerminal({
         enabled={effectsEnabled && particlesEnabled} 
         trigger={triggerParticles} 
         lowPerformanceMode={performanceMode}
-        maxParticles={isDesktop ? 3 : 15} // Drastically reduce particles on desktop
+        {...{maxParticles: isDesktop ? 3 : 15} as any}
       />
       
       <div 
