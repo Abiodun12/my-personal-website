@@ -706,10 +706,9 @@
 }
 
 /* Add a performance toggle */
-.performance-toggle {
+.performance-toggle,
+.particles-toggle {
   position: fixed;
-  bottom: 10px;
-  right: 10px;
   background: rgba(0, 0, 0, 0.7);
   color: var(--text-color);
   padding: 5px 10px;
@@ -721,8 +720,52 @@
   transition: opacity 0.2s;
 }
 
-.performance-toggle:hover {
+.performance-toggle:hover,
+.particles-toggle:hover {
   opacity: 1;
+}
+
+.performance-toggle {
+  bottom: 10px;
+  right: 10px;
+}
+
+.particles-toggle {
+  bottom: 40px;
+  right: 10px;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .performance-toggle,
+  .particles-toggle {
+    font-size: 10px;
+    padding: 3px 6px;
+  }
+  
+  .performance-toggle {
+    bottom: 5px;
+    right: 5px;
+  }
+  
+  .particles-toggle {
+    bottom: 5px;
+    right: 125px; /* Position side by side instead of stacked */
+  }
+  
+  /* Make sure they don't overlap with inputs */
+  .terminal-input-line {
+    margin-bottom: 40px; /* Add space at the bottom for the toggle buttons */
+  }
+  
+  /* Enhanced welcome for mobile */
+  .welcome-title {
+    font-size: 1.2rem;
+  }
+  
+  .welcome-subtitle {
+    font-size: 0.9rem;
+  }
 }
 
 /* Add desktop detection and optimization */
