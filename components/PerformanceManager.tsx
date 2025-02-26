@@ -37,12 +37,20 @@ export function PerformanceManager() {
           // Throttle scroll events
           let scrollTimeout: number | undefined;
           const originalScroll = window.addEventListener;
-          window.addEventListener = function(type, listener, options) {
+          window.addEventListener = function(
+            type: string, 
+            listener: EventListenerOrEventListenerObject, 
+            options?: boolean | AddEventListenerOptions
+          ) {
             if (type === 'scroll') {
-              return originalScroll.call(this, type, (e) => {
+              return originalScroll.call(this, type, (e: Event) => {
                 clearTimeout(scrollTimeout);
                 scrollTimeout = setTimeout(() => {
-                  listener(e);
+                  if (typeof listener === 'function') {
+                    listener(e);
+                  } else {
+                    listener.handleEvent(e);
+                  }
                 }, 100);
               }, options);
             }
@@ -52,10 +60,10 @@ export function PerformanceManager() {
           // Reduce animation frames
           const originalRAF = window.requestAnimationFrame;
           let lastRAFTime = 0;
-          window.requestAnimationFrame = function(callback) {
+          window.requestAnimationFrame = function(callback: FrameRequestCallback): number {
             const now = Date.now();
             if (now - lastRAFTime < 50) { // Only allow 20fps max
-              return setTimeout(() => callback(now), 50);
+              return window.setTimeout(() => callback(now), 50);
             }
             lastRAFTime = now;
             return originalRAF(callback);
