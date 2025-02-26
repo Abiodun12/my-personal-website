@@ -7,6 +7,7 @@
   justify-content: center;
   background-color: var(--background-color);
   overflow: hidden;
+  position: relative;
 }
 
 .terminal {
@@ -14,13 +15,17 @@
   height: min(100%, 800px);
   margin: auto;
   background-color: rgba(0, 0, 0, 0.95);
-  border-radius: 0;
+  border-radius: 8px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   position: relative;
-  box-shadow: 0 0 30px rgba(0, 255, 0, 0.1);
-  border: 1px solid rgba(0, 255, 0, 0.1);
+  box-shadow: 0 0 30px rgba(0, 255, 0, 0.1), 
+              inset 0 0 15px rgba(0, 255, 0, 0.05);
+  border: 1px solid rgba(0, 255, 0, 0.2);
+  animation: pulseGlow var(--hologram-animation-speed) ease-in-out infinite;
+  transform-style: preserve-3d;
+  perspective: 1000px;
 }
 
 .terminal::before {
@@ -51,7 +56,7 @@
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  padding: 1rem;
+  position: relative;
 }
 
 .terminal-output {
@@ -62,6 +67,8 @@
   font-size: clamp(14px, 2.5vw, 16px);
   word-wrap: break-word;
   overflow-wrap: break-word;
+  text-shadow: var(--text-glow);
+  position: relative;
 }
 
 .terminal-link, .terminal-contact .terminal-link {
@@ -73,22 +80,21 @@
   text-transform: uppercase;
   font-weight: bold;
   letter-spacing: 0.5px;
-  text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+  text-shadow: var(--text-glow);
   cursor: pointer;
   display: inline-block;
   min-height: 24px;
   line-height: 24px;
+  overflow: hidden;
 }
 
 .terminal-link:hover, .terminal-contact .terminal-link:hover {
   color: #00ff00;
   text-shadow: 0 0 10px #00ff00,
-               0 0 20px #00ff00,
-               0 0 30px #00ff00,
-               0 0 40px #00ff00;
+               0 0 15px #00ff00;
   background: rgba(0, 255, 0, 0.1);
   border-radius: 4px;
-  transform: scale(1.05);
+  transform: scale(1.05) translateZ(10px);
   text-decoration: none;
 }
 
@@ -120,8 +126,9 @@
 @media (max-width: 768px) {
   .terminal-link, .terminal-contact .terminal-link {
     padding: 8px 12px;
-    margin: 4px 0;
-    min-height: 44px; /* Better touch targets */
+    margin: 6px 0;
+    min-height: 48px;
+    font-size: 16px;
   }
 }
 
@@ -138,14 +145,17 @@
 .cursor {
   display: inline-block;
   width: 8px;
-  height: 16px;
-  background-color: #00FF00;
-  animation: blink 1s step-end infinite;
+  height: 18px;
+  background-color: var(--text-color);
+  animation: cursorPulse 1.2s infinite;
+  position: relative;
+  border-radius: 1px;
+  box-shadow: 0 0 8px var(--text-color);
 }
 
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
+@keyframes cursorPulse {
+  0%, 100% { opacity: 1; transform: scaleY(1); }
+  50% { opacity: 0.6; transform: scaleY(0.8); }
 }
 
 /* Add scanning line effect */
@@ -155,10 +165,10 @@
     opacity: 0;
   }
   50% {
-    opacity: 0.4;
+    opacity: 0.3;
   }
   100% {
-    transform: translateY(800px);
+    transform: translateY(100vh);
     opacity: 0;
   }
 }
@@ -352,6 +362,12 @@
   --background-color: #000;
   /* Add accessible alternative */
   --accessible-text: #4CAF50; 
+  --text-glow: 0 0 5px rgba(0, 255, 0, 0.5);
+  --terminal-border-glow: 0 0 15px rgba(0, 255, 0, 0.3);
+  --hologram-animation-speed: 4s;
+  --particle-color: rgba(0, 255, 0, 0.6);
+  --cursor-trail-color: rgba(0, 255, 0, 0.3);
+  --menu-bg-color: rgba(0, 0, 0, 0.85);
 }
 
 @media (prefers-contrast: more) {
@@ -366,4 +382,254 @@
   user-select: none;
   padding: 5px 0;
   display: inline-block;
+}
+
+/* Add holographic scan lines overlay */
+.terminal-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 255, 0, 0.03) 0px,
+    rgba(0, 255, 0, 0.03) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  pointer-events: none;
+  animation: scanlines 8s linear infinite;
+  opacity: 0.3;
+  z-index: 2;
+}
+
+@keyframes scanlines {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 100%; }
+}
+
+/* Floating animation for terminal */
+@keyframes pulseGlow {
+  0%, 100% { 
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.1),
+                inset 0 0 10px rgba(0, 255, 0, 0.05);
+    transform: translateY(0) scale(1);
+  }
+  50% { 
+    box-shadow: 0 0 30px rgba(0, 255, 0, 0.2),
+                inset 0 0 15px rgba(0, 255, 0, 0.1);
+    transform: translateY(-5px) scale(1.005);
+  }
+}
+
+/* Holographic overlay for links */
+.terminal-link::after {
+  content: '';
+  position: absolute;
+  top: -100%;
+  left: -100%;
+  width: 300%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 0%,
+    rgba(0, 255, 0, 0.1) 30%,
+    rgba(0, 255, 0, 0.2) 50%,
+    rgba(0, 255, 0, 0.1) 70%,
+    transparent 100%
+  );
+  transition: transform 0.5s ease;
+  transform: rotate(45deg) translateY(-100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.terminal-link:hover::after {
+  transform: rotate(45deg) translateY(80%);
+}
+
+/* Add styles for the command menu */
+.command-menu-toggle {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid var(--text-color);
+  color: var(--text-color);
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  cursor: pointer;
+  z-index: 100;
+  font-family: 'Courier New', monospace;
+  font-size: 18px;
+  transition: all 0.3s ease;
+  text-shadow: var(--text-glow);
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.2);
+}
+
+.command-menu-toggle:hover {
+  background: rgba(0, 255, 0, 0.1);
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+}
+
+.command-menu {
+  position: fixed;
+  top: 4rem;
+  right: 1rem;
+  width: 300px;
+  background: var(--menu-bg-color);
+  border: 1px solid var(--text-color);
+  border-radius: 4px;
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+  padding: 1rem;
+  z-index: 100;
+  transform-origin: top right;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  opacity: 0;
+  transform: scale(0.9);
+  pointer-events: none;
+  overflow-y: auto;
+  max-height: 80vh;
+}
+
+.command-menu.visible {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: all;
+}
+
+.command-menu-header {
+  border-bottom: 1px solid rgba(0, 255, 0, 0.3);
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+  color: var(--text-color);
+  text-shadow: var(--text-glow);
+  font-weight: bold;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.command-menu-close {
+  cursor: pointer;
+  font-size: 1.2rem;
+  color: var(--text-color);
+}
+
+.command-item {
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  border-left: 2px solid transparent;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.command-item:hover {
+  background: rgba(0, 255, 0, 0.1);
+  border-left-color: var(--text-color);
+  padding-left: 1rem;
+}
+
+.command-key {
+  color: var(--text-color);
+  font-weight: bold;
+  margin-right: 0.5rem;
+  text-shadow: var(--text-glow);
+}
+
+.command-desc {
+  color: var(--text-color);
+  opacity: 0.8;
+}
+
+/* Add styles for particles */
+.particles-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.particle {
+  position: absolute;
+  background-color: var(--particle-color);
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+}
+
+/* Cursor trail effect */
+.cursor::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--cursor-trail-color);
+  filter: blur(2px);
+  transform-origin: left;
+  transform: scaleX(0);
+  animation: cursorTrail 1.2s infinite;
+}
+
+@keyframes cursorTrail {
+  0% { transform: scaleX(0); opacity: 0.8; }
+  30% { transform: scaleX(5); opacity: 0.4; }
+  100% { transform: scaleX(0); opacity: 0; }
+}
+
+/* Ensure accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .terminal,
+  .terminal-link::after,
+  .cursor,
+  .cursor::before,
+  .particle {
+    animation: none !important;
+    transition: none !important;
+  }
+  
+  .terminal-container::before {
+    display: none;
+  }
+}
+
+/* Responsive improvements for mobile */
+@media (max-width: 768px) {
+  .command-menu {
+    width: 90%;
+    max-width: 300px;
+    right: 5%;
+    left: auto;
+  }
+  
+  .command-menu-toggle {
+    width: 48px;
+    height: 48px;
+    font-size: 20px;
+  }
+  
+  .terminal-output {
+    font-size: 16px;
+  }
+  
+  .cursor {
+    height: 20px;
+    width: 10px;
+  }
 } 

@@ -49,3 +49,6 @@ next-env.d.ts
 # Test files
 test.jpg
 api/python/test.jpg
+.env
+.env.local
+.env*.local

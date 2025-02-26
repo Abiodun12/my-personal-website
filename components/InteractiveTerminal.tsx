@@ -2,6 +2,8 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Cursor } from './Cursor'
 import { TerminalLink } from './TerminalLink'
+import { CommandMenu } from './CommandMenu'
+import { ParticleEffects } from './ParticleEffects'
 
 interface Command {
   command: string;
@@ -29,6 +31,8 @@ export function InteractiveTerminal({
   const terminalRef = useRef<HTMLDivElement>(null);
   const [commandHistory, setCommandHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+  const [triggerParticles, setTriggerParticles] = useState(false);
+  const [effectsEnabled, setEffectsEnabled] = useState(true);
 
   const handleNavigation = (path: string) => {
     window.location.href = path;
@@ -60,7 +64,11 @@ export function InteractiveTerminal({
         {'>'}  <span 
           className="terminal-link"
           onClick={() => handleCommand('contact')}
-        >CONTACT</span>  : How to reach me
+        >CONTACT</span>  : How to reach me<br/>
+        {'>'}  <span 
+          className="terminal-link"
+          onClick={() => handleCommand('effects ' + (effectsEnabled ? 'off' : 'on'))}
+        >EFFECTS {effectsEnabled ? 'OFF' : 'ON'}</span> : Toggle visual effects
       </div>
     ),
     about: () => {
@@ -78,6 +86,16 @@ export function InteractiveTerminal({
     clear: () => {
       setHistory([]);
       return null;
+    },
+    effects: (args = '') => {
+      if (args.trim().toLowerCase() === 'off') {
+        setEffectsEnabled(false);
+        return 'Visual effects disabled';
+      } else if (args.trim().toLowerCase() === 'on') {
+        setEffectsEnabled(true);
+        return 'Visual effects enabled';
+      }
+      return `Usage: effects on|off (currently ${effectsEnabled ? 'on' : 'off'})`;
     },
     contact: () => (
       <div className="terminal-contact">
@@ -99,26 +117,73 @@ export function InteractiveTerminal({
   };
 
   const handleCommand = (cmd: string) => {
-    const trimmedCmd = cmd.trim().toLowerCase();
+    const parts = cmd.trim().split(' ');
+    const command = parts[0].toLowerCase();
+    const args = parts.slice(1).join(' ');
+    
     let output: React.ReactNode = '';
 
-    if (trimmedCmd) {
+    if (cmd.trim()) {
       setCommandHistory(prev => [...prev, cmd]);
+      
+      // Trigger particle effect
+      if (effectsEnabled) {
+        setTriggerParticles(prev => !prev);
+      }
     }
 
-    if (trimmedCmd in commands) {
-      const result = commands[trimmedCmd]();
-      output = result || `Executed: ${trimmedCmd}`;
-    } else if (trimmedCmd) {
-      output = `Command not found: ${trimmedCmd}. Type 'help' for available commands.`;
+    if (command in commands) {
+      // Pass arguments to command function if it accepts them
+      if (command === 'effects') {
+        output = commands.effects(args);
+      } else {
+        const result = commands[command]();
+        output = result || `Executed: ${command}`;
+      }
+    } else if (cmd.trim()) {
+      output = `Command not found: ${command}. Type 'help' for available commands.`;
     }
 
-    if (trimmedCmd) {
+    if (cmd.trim()) {
       setHistory(prev => [...prev, { command: cmd, output }]);
     }
     setInput('');
     setHistoryIndex(-1);
   };
+
+  // Menu command definitions
+  const menuCommands = [
+    { 
+      key: 'ABOUT', 
+      description: 'Learn more about me', 
+      action: () => handleNavigation('/about')
+    },
+    { 
+      key: 'PROJECTS', 
+      description: 'View my portfolio', 
+      action: () => handleNavigation('/projects')
+    },
+    { 
+      key: 'BLOG', 
+      description: 'Read my thoughts', 
+      action: () => handleNavigation('/blog')
+    },
+    { 
+      key: 'CONTACT', 
+      description: 'How to reach me', 
+      action: () => handleCommand('contact')
+    },
+    { 
+      key: 'CLEAR', 
+      description: 'Clear terminal', 
+      action: () => handleCommand('clear')
+    },
+    { 
+      key: 'EFFECTS ' + (effectsEnabled ? 'OFF' : 'ON'), 
+      description: 'Toggle visual effects', 
+      action: () => handleCommand('effects ' + (effectsEnabled ? 'off' : 'on'))
+    }
+  ];
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -161,6 +226,10 @@ export function InteractiveTerminal({
       ref={terminalRef}
       onClick={() => inputRef.current?.focus()}
     >
+      <CommandMenu commands={menuCommands} />
+      
+      <ParticleEffects enabled={effectsEnabled} trigger={triggerParticles} />
+      
       {initialOutput && <div className="terminal-initial">{initialOutput}</div>}
       
       {history.map((entry, i) => (
@@ -191,7 +260,7 @@ export function InteractiveTerminal({
           spellCheck="false"
           aria-label="Terminal input"
         />
-        <Cursor />
+        <Cursor animated={effectsEnabled} />
       </div>
     </div>
   );
