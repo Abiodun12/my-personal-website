@@ -4,8 +4,17 @@ import { Cursor } from './Cursor'
 import { TerminalLink } from './TerminalLink'
 import { CommandMenu } from './CommandMenu'
 import { ParticleEffects } from './ParticleEffects'
+import { usePreferences } from './UserPreferencesProvider'
 
-const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024;
+// More aggressive desktop detection with performance defaults
+const isDesktop = typeof window !== 'undefined' && (
+  window.innerWidth >= 1024 || 
+  navigator.userAgent.includes('Windows') || 
+  navigator.userAgent.includes('Mac')
+);
+const defaultPerformanceMode = isDesktop ? 
+  (process.env.NEXT_PUBLIC_DESKTOP_PERFORMANCE_DEFAULT === 'max' ? 'max' : 'high') : 
+  'standard';
 
 interface Command {
   command: string;
@@ -27,6 +36,8 @@ export function InteractiveTerminal({
   initialOutput,
   prompt = "$"
 }: InteractiveTerminalProps) {
+  const { preferences, savePreferences, loading } = usePreferences();
+  
   const [history, setHistory] = useState<Command[]>([]);
   const [input, setInput] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -34,8 +45,46 @@ export function InteractiveTerminal({
   const [commandHistory, setCommandHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [triggerParticles, setTriggerParticles] = useState(false);
-  const [effectsEnabled, setEffectsEnabled] = useState(true);
+  
+  // Use preferences from context once loaded
+  const [effectsEnabled, setEffectsEnabled] = useState(!isDesktop);
+  const [particlesEnabled, setParticlesEnabled] = useState(!isDesktop);
   const [performanceMode, setPerformanceMode] = useState(isDesktop);
+  
+  // Sync state with preferences once loaded
+  useEffect(() => {
+    if (!loading) {
+      setEffectsEnabled(preferences.effectsEnabled);
+      setParticlesEnabled(preferences.particlesEnabled);
+      setPerformanceMode(preferences.performanceMode);
+    }
+  }, [preferences, loading]);
+  
+  // Save changes to preferences
+  const updatePreferences = useCallback((
+    effects?: boolean, 
+    particles?: boolean, 
+    performance?: boolean
+  ) => {
+    const updatedPrefs: any = {};
+    
+    if (effects !== undefined) {
+      setEffectsEnabled(effects);
+      updatedPrefs.effectsEnabled = effects;
+    }
+    
+    if (particles !== undefined) {
+      setParticlesEnabled(particles);
+      updatedPrefs.particlesEnabled = particles;
+    }
+    
+    if (performance !== undefined) {
+      setPerformanceMode(performance);
+      updatedPrefs.performanceMode = performance;
+    }
+    
+    savePreferences(updatedPrefs);
+  }, [savePreferences]);
 
   const handleNavigation = (path: string) => {
     window.location.href = path;
@@ -96,10 +145,10 @@ export function InteractiveTerminal({
     },
     effects: (args = '') => {
       if (args.trim().toLowerCase() === 'off') {
-        setEffectsEnabled(false);
+        updatePreferences(false);
         return 'Visual effects disabled';
       } else if (args.trim().toLowerCase() === 'on') {
-        setEffectsEnabled(true);
+        updatePreferences(true);
         return 'Visual effects enabled';
       }
       return `Usage: effects on|off (currently ${effectsEnabled ? 'on' : 'off'})`;
@@ -123,20 +172,28 @@ export function InteractiveTerminal({
     ),
     performance: (args = '') => {
       if (args.trim().toLowerCase() === 'high') {
-        setPerformanceMode(true);
+        updatePreferences(undefined, undefined, true);
         return 'Performance mode enabled - reduces visual effects for better performance';
       } else if (args.trim().toLowerCase() === 'max') {
-        setPerformanceMode(true);
-        setEffectsEnabled(false);
+        updatePreferences(false, false, true);
         return 'Maximum performance mode enabled - most visual effects disabled';
       } else if (args.trim().toLowerCase() === 'standard') {
-        setPerformanceMode(false);
-        setEffectsEnabled(true);
+        updatePreferences(true, true, false);
         return 'Standard mode enabled - full visual effects';
       }
       return `Usage: performance standard|high|max (currently ${
         !effectsEnabled ? 'max' : performanceMode ? 'high' : 'standard'
       })`;
+    },
+    particles: (args = '') => {
+      if (args.trim().toLowerCase() === 'off') {
+        updatePreferences(undefined, false);
+        return 'Particles disabled';
+      } else if (args.trim().toLowerCase() === 'on') {
+        updatePreferences(undefined, true);
+        return 'Particles enabled';
+      }
+      return `Usage: particles on|off (currently ${particlesEnabled ? 'on' : 'off'})`;
     }
   };
 
@@ -156,7 +213,7 @@ export function InteractiveTerminal({
     }
 
     if (command in commands) {
-      if (command === 'effects' || command === 'performance') {
+      if (command === 'effects' || command === 'performance' || command === 'particles') {
         output = commands[command](args);
       } else {
         const result = commands[command]();
@@ -208,6 +265,11 @@ export function InteractiveTerminal({
       key: 'PERFORMANCE MODE', 
       description: performanceMode ? 'Switch to standard mode' : 'Enable high performance mode',
       action: () => handleCommand(`performance ${performanceMode ? 'standard' : 'high'}`)
+    },
+    { 
+      key: 'PARTICLES ' + (particlesEnabled ? 'OFF' : 'ON'), 
+      description: 'Toggle particles', 
+      action: () => handleCommand('particles ' + (particlesEnabled ? 'off' : 'on'))
     }
   ];
 
@@ -255,19 +317,41 @@ export function InteractiveTerminal({
       <CommandMenu commands={menuCommands} />
       
       <ParticleEffects 
-        enabled={effectsEnabled} 
+        enabled={effectsEnabled && particlesEnabled} 
         trigger={triggerParticles} 
         lowPerformanceMode={performanceMode}
+        maxParticles={isDesktop ? 3 : 15} // Drastically reduce particles on desktop
       />
       
       <div 
         className="performance-toggle"
-        onClick={() => setPerformanceMode(prev => !prev)}
+        onClick={() => updatePreferences(undefined, undefined, !performanceMode)}
         role="button"
         tabIndex={0}
         aria-label={`${performanceMode ? 'Disable' : 'Enable'} performance mode`}
       >
         {performanceMode ? '🚀 Performance Mode' : '✨ Standard Mode'}
+      </div>
+      
+      <div 
+        className="particles-toggle"
+        onClick={() => updatePreferences(undefined, !particlesEnabled)}
+        style={{ 
+          position: 'fixed', 
+          bottom: '40px', 
+          right: '10px',
+          background: 'rgba(0, 0, 0, 0.7)',
+          color: 'var(--text-color)',
+          padding: '5px 10px',
+          fontSize: '12px',
+          zIndex: 1000,
+          cursor: 'pointer',
+          border: '1px solid var(--text-color)',
+          opacity: 0.6,
+          transition: 'opacity 0.2s'
+        }}
+      >
+        {particlesEnabled ? '✨ Particles On' : '🚫 Particles Off'}
       </div>
       
       {initialOutput && <div className="terminal-initial">{initialOutput}</div>}

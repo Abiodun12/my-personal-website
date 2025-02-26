@@ -5,6 +5,8 @@ import React from 'react'
 import { Inter } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/react'
 import KeepAliveClient from './KeepAliveClient'
+import { PerformanceManager } from '../components/PerformanceManager'
+import { UserPreferencesProvider } from '../components/UserPreferencesProvider'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -22,15 +24,18 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body suppressHydrationWarning>
-        <div className="terminal-container">
-          <div className="terminal">
-            <div className="terminal-content">
-              {children}
-              <Analytics />
-              <KeepAliveClient />
+        <UserPreferencesProvider>
+          <PerformanceManager />
+          <div className="terminal-container">
+            <div className="terminal">
+              <div className="terminal-content">
+                {children}
+                <Analytics />
+                <KeepAliveClient />
+              </div>
             </div>
           </div>
-        </div>
+        </UserPreferencesProvider>
       </body>
     </html>
   )
