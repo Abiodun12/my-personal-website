@@ -35,7 +35,7 @@ export function PerformanceManager() {
       if (preferences.performanceMode) {
         const reduceDOMOperations = () => {
           // Throttle scroll events
-          let scrollTimeout;
+          let scrollTimeout: number | undefined;
           const originalScroll = window.addEventListener;
           window.addEventListener = function(type, listener, options) {
             if (type === 'scroll') {
