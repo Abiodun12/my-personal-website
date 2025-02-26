@@ -64,24 +64,27 @@ export async function POST(request: Request) {
 
       return NextResponse.json(responseData)
 
-    } catch (fetchError: unknown) {
+    } catch (error) {
       clearTimeout(timeoutId)
-      if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+      if (error instanceof DOMException && error.name === 'AbortError') {
         return NextResponse.json({
           success: false,
-          error: 'Request timed out. Please try again.',
+          error: 'Request timed out after 55 seconds',
           result: null
         }, { status: 504 })
       }
-      throw fetchError
+      
+      return NextResponse.json({
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred',
+        result: null
+      }, { status: 500 })
     }
-
   } catch (error) {
-    console.error('Error:', error)
     return NextResponse.json({
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? error.message : 'Error processing request',
       result: null
-    }, { status: 500 })
+    }, { status: 400 })
   }
 } 

@@ -32,27 +32,14 @@ export default function SmartPetPlus() {
     setError(null)
     
     try {
-      // Convert file to base64
-      const base64 = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader()
-        reader.readAsDataURL(file)
-        reader.onload = () => {
-          const result = reader.result as string
-          const base64Data = result.split(',')[1]
-          resolve(base64Data)
-        }
-        reader.onerror = reject
-      })
+      // Create FormData
+      const formData = new FormData()
+      formData.append('uploaded-file', file)
       
       // Send to API
       const response = await fetch('/api/smart-pet-plus', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          'uploaded-file': base64
-        })
+        body: formData
       })
       
       const data = await response.json()
