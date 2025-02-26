@@ -35,7 +35,7 @@ export function PerformanceManager() {
       if (preferences.performanceMode) {
         const reduceDOMOperations = () => {
           // Throttle scroll events
-          let scrollTimeout: number | undefined;
+          let scrollTimeout: ReturnType<typeof setTimeout>;
           const originalScroll = window.addEventListener;
           window.addEventListener = function(
             type: string, 
@@ -63,7 +63,7 @@ export function PerformanceManager() {
           window.requestAnimationFrame = function(callback: FrameRequestCallback): number {
             const now = Date.now();
             if (now - lastRAFTime < 50) { // Only allow 20fps max
-              return window.setTimeout(() => callback(now), 50);
+              return Number(window.setTimeout(() => callback(now), 50));
             }
             lastRAFTime = now;
             return originalRAF(callback);
