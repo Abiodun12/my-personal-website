@@ -15,7 +15,7 @@ interface InteractiveTerminalProps {
   prompt?: string;
 }
 
-type CommandFunction = () => React.ReactNode | void;
+type CommandFunction = (args?: string) => React.ReactNode;
 
 interface CommandMap {
   [key: string]: CommandFunction;
@@ -137,8 +137,9 @@ export function InteractiveTerminal({
       if (command === 'effects') {
         output = commands.effects(args);
       } else {
+        // Call without args for other commands
         const result = commands[command]();
-        output = result || `Executed: ${command}`;
+        output = result !== undefined ? result : `Executed: ${command}`;
       }
     } else if (cmd.trim()) {
       output = `Command not found: ${command}. Type 'help' for available commands.`;
