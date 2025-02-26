@@ -1,13 +1,14 @@
-'use client'
-
+// This is a Server Component (no 'use client' directive)
 import './globals.css'
 import '../styles/terminal.css'
-import React, { useEffect } from 'react'
+import React from 'react'
 import { Inter } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/react'
+import KeepAliveClient from './KeepAliveClient'
 
 const inter = Inter({ subsets: ['latin'] })
 
+// Metadata can only be exported from a Server Component
 export const metadata = {
   title: 'LIFE OF ABIODUN(AB)',
   description: 'Welcome to my personal website where I share my journey in tech and life.',
@@ -18,27 +19,6 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  // Keep alive ping for Render API
-  useEffect(() => {
-    const pingRender = () => {
-      // Make a request to your health endpoint
-      fetch('https://my-personal-website-t7tw.onrender.com/health', { 
-        method: 'GET',
-        // Use no-cors to avoid CORS issues with the OPTIONS preflight
-        mode: 'no-cors'
-      }).catch(err => console.log('Ping error (expected):', err.message));
-    };
-
-    // Ping immediately
-    pingRender();
-    
-    // Set up interval for every 5 minutes
-    const interval = setInterval(pingRender, 5 * 60 * 1000);
-    
-    // Clean up
-    return () => clearInterval(interval);
-  }, []);
-
   return (
     <html lang="en" suppressHydrationWarning>
       <body suppressHydrationWarning>
@@ -47,6 +27,7 @@ export default function RootLayout({
             <div className="terminal-content">
               {children}
               <Analytics />
+              <KeepAliveClient />
             </div>
           </div>
         </div>
