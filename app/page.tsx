@@ -6,26 +6,27 @@ import { Terminal } from '../components/Terminal'
 import { Cursor } from '../components/Cursor'
 
 export default function Home() {
+  const initialOutput = (
+    <>
+      Welcome to LIFE OF ABIODUN(AB)!
+      <br /><br />
+      Type 'help' for available commands:
+      <br />
+      $ help
+      <br /><br />
+      <div className="terminal-help">
+        Available Commands:<br/>
+        {'>'}  <span className="command-link">ABOUT</span>    : Learn more about me<br/>
+        {'>'}  <span className="command-link">PROJECTS</span> : View my portfolio<br/>
+        {'>'}  <span className="command-link">BLOG</span>     : Read my thoughts<br/>
+        {'>'}  <span className="command-link">CONTACT</span>  : How to reach me
+      </div>
+    </>
+  );
+  
   return (
     <main style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-      <Terminal>
-        Welcome to LIFE OF ABIODUN(AB)!
-        <Cursor />
-      </Terminal>
-      <Terminal>Type 'help' for available commands:</Terminal>
-      <Terminal>$ help</Terminal>
-      <Terminal>
-        Available commands:
-        <br />
-        - about: Learn more about me
-        <br />
-        - projects: View my portfolio
-        <br />
-        - blog: Read my thoughts
-        <br />
-        - contact: How to reach me
-      </Terminal>
-      <InteractiveTerminal />
+      <InteractiveTerminal initialOutput={initialOutput} />
     </main>
   )
 } 
