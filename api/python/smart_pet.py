@@ -115,7 +115,13 @@ def generate_story_with_deepseek(subject):
             "Authorization": f"Bearer {DEEPSEEK_API_KEY}"
         }
         
-        prompt = f"Write a creative 3-sentence story about a {clean_subject}, followed by an interesting fun fact. Use this format exactly: [Story] ... [Fun Fact: ...]"
+        prompt = (
+            f"Write a super short, creative story (2-3 sentences) about a {clean_subject} that includes a surprising twist or funny moment. "
+            f"Tell it from the animal's perspective, and include a line of dialogue if possible. "
+            f"After the story, give one surprising, little-known, or funny fact about this exact breed/species. "
+            f"Make it something most people wouldn't know, and if possible, relate it to pop culture, history, or a record. "
+            f"End with a question or a call to action. Use this format exactly: [Story] ... [Fun Fact: ...]"
+        )
         
         data = {
             "model": DEEPSEEK_MODEL,
@@ -154,13 +160,21 @@ def analyze_image(image_data):
         print("Starting image analysis...")
         image_base64 = base64.b64encode(image_data).decode('utf-8')
         
-        # Enhanced prompt for better subject identification and breed detection
+        # Advanced prompt for precise breed/species/type identification
         messages = [
             {
                 "role": "user",
                 "content": [
                     {"image": f"data:image/jpeg;base64,{image_base64}"},
-                    {"text": "What exactly is in this image? If it's an animal, please identify the specific breed or species. Be precise but concise with your answer (1-5 words)."}
+                    {"text": (
+                        "Identify precisely what is in this image with maximum specificity. "
+                        "If it's an animal, provide the EXACT breed/species/subspecies. "
+                        "Examples of good answers: 'Siamese Cat', 'Border Collie', 'Ball Python', 'Emperor Penguin', 'Red-tailed Hawk'. "
+                        "Examples of bad answers: 'Cat', 'Dog', 'Snake', 'Bird'. "
+                        "If it's a non-animal object, be equally specific (e.g., 'Vintage Polaroid Camera' not just 'Camera'). "
+                        "If you're not 100% certain, provide your most confident guess. "
+                        "Answer in 1-5 words, focusing ONLY on the main subject."
+                    )}
                 ]
             }
         ]

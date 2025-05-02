@@ -24,9 +24,14 @@ export async function POST(request: Request) {
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT)
 
+    // Local development API endpoint
+    const API_ENDPOINT = process.env.NODE_ENV === 'development' 
+      ? 'http://localhost:10001/api/analyze'  // Local development (updated port)
+      : 'https://my-personal-website-t7tw.onrender.com/api/analyze'; // Production
+
     try {
       // Forward to Flask API
-      const response = await fetch('https://my-personal-website-t7tw.onrender.com/api/analyze', {
+      const response = await fetch(API_ENDPOINT, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

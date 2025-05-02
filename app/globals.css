@@ -464,6 +464,35 @@ a[target="_blank"].terminal-link:hover {
     box-shadow: 0 0 20px rgba(0, 255, 0, 0.1), 
                 inset 0 0 10px rgba(0, 255, 0, 0.05);
   }
+  
+  .terminal {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  
+  .terminal-link:hover, 
+  .command-item:hover, 
+  .project-item:hover {
+    transform: none !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+  }
+  
+  /* Simplify animations drastically */
+  .cursor, 
+  .terminal-link::after,
+  .terminal-container::before {
+    animation-duration: 0s !important;
+    animation: none !important;
+  }
+  
+  /* Force hardware acceleration for scrolling */
+  .terminal-content {
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    backface-visibility: hidden;
+  }
 }
 
 @media (min-width: 1024px) {
