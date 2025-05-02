@@ -52,3 +52,8 @@ api/python/test.jpg
 .env
 .env.local
 .env*.local
+
+venv/
+fresh_venv/
+api/python/venv/
+api/python/fresh_venv/
