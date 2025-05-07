@@ -36,7 +36,12 @@ def analyze_image_route():
         return '', 204
 
     try:
+        print("Received request:", request)
+        print("Request headers:", dict(request.headers))
+        print("Request content type:", request.content_type)
+        
         if not request.is_json:
+            print("ERROR: Request is not JSON")
             response = jsonify({
                 "success": False,
                 "error": "Request must be JSON",
@@ -46,8 +51,12 @@ def analyze_image_route():
             return response, 400
 
         data = request.get_json()
+        print("Parsed data keys:", list(data.keys()))
         
         if 'image' not in data:
+            print("ERROR: 'image' field not found in request data")
+            print("Available keys:", list(data.keys()))
+
             return jsonify({
                 "success": False,
                 "error": "No image provided",
@@ -160,12 +169,26 @@ def analyze_image(image_data):
         print("Starting image analysis...")
         image_base64 = base64.b64encode(image_data).decode('utf-8')
         
+        # Detect MIME type from the image data (simple detection based on magic bytes)
+        mime_type = "image/jpeg"  # Default
+        if image_data.startswith(b'\x89PNG'):
+            mime_type = "image/png"
+        elif image_data.startswith(b'GIF'):
+            mime_type = "image/gif"
+        elif image_data.startswith(b'\xff\xd8'):
+            mime_type = "image/jpeg"
+        else:
+            # For unknown formats, use a generic image type
+            mime_type = "image/jpeg"  # Most compatible fallback
+            
+        print(f"Detected MIME type: {mime_type}")
+        
         # Advanced prompt for precise breed/species/type identification
         messages = [
             {
                 "role": "user",
                 "content": [
-                    {"image": f"data:image/jpeg;base64,{image_base64}"},
+                    {"image": f"data:{mime_type};base64,{image_base64}"},
                     {"text": (
                         "Identify precisely what is in this image with maximum specificity. "
                         "If it's an animal, provide the EXACT breed/species/subspecies. "
