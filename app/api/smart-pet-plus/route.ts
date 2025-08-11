@@ -26,7 +26,7 @@ export async function POST(request: Request) {
 
     // Local development API endpoint
     const API_ENDPOINT = process.env.NODE_ENV === 'development' 
-      ? 'http://localhost:10000/api/analyze'  // Local development
+      ? 'http://localhost:8081/api/analyze'  // Local development
       : 'https://my-personal-website-t7tw.onrender.com/api/analyze'; // Production
 
     try {
