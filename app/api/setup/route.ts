@@ -13,6 +13,18 @@ export async function GET() {
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       )
     `;
+
+    // Create blog_likes table if it doesn't exist
+    await sql`
+      CREATE TABLE IF NOT EXISTS blog_likes (
+        id SERIAL PRIMARY KEY,
+        post_slug VARCHAR(255) NOT NULL,
+        user_id TEXT NOT NULL,
+        username VARCHAR(100) NOT NULL,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(post_slug, user_id)
+      )
+    `;
     
     return NextResponse.json({ 
       success: true, 

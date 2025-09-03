@@ -3,6 +3,7 @@ import { Terminal } from '../../../components/Terminal'
 import { TerminalLink } from '../../../components/TerminalLink'
 import { notFound } from 'next/navigation'
 import { blogPosts } from '../../../config/blog'
+import { BlogLikeButton } from '../../../components/BlogLikeButton'
 import type { Metadata } from 'next'
 
 interface BlogPost {
@@ -43,6 +44,12 @@ export default function BlogPost({ params }: Props) {
           dangerouslySetInnerHTML={{ __html: formatContent(post.content) }} 
         />
       </Terminal>
+      
+      {/* Add the like button */}
+      <Terminal>
+        <BlogLikeButton postSlug={params.slug} />
+      </Terminal>
+      
       <Terminal>
         $ <TerminalLink href="/blog">cd ..</TerminalLink>
       </Terminal>
