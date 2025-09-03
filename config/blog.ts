@@ -9,6 +9,32 @@ export interface BlogPost {
 // This will be populated at build time
 export const blogPosts: BlogPost[] = [
   {
+    slug: 'public-draft-with-yoni',
+    title: 'Public Draft with Yoni: Adding More Substack Features Because I’m a Copycat',
+    date: '2025-09-03',
+    description: 'Testing a Substack-style public draft with a new like button—spontaneous notes with Yonathan.',
+    content: `# Public Draft with Yoni: Adding More Substack Features Because I’m a Copycat
+
+Published on: September 3, 2025
+
+I don’t really know what to say, but here we are. This is my first post testing out a Substack feature I’m adding. The idea came to me a couple of days ago—funny enough, from someone I saw on Instagram. At first, I thought, why even use Substack when I could just build my own platform? But I figured, why not? Sometimes you just have to start.
+
+Right now, I’m sitting here with Yonathan (say hi, Yonathan). He’s not sure what to say either. Maybe that’s the point—this doesn’t have to be forced. It should flow naturally.
+
+Yonathan’s Part
+
+Earlier today, I went on a run and saw something that stuck with me: a father sitting at a playground, reading a book to his two daughters. It was such a simple scene, but something about it was beautiful. Little moments like that hit me and make me pause.
+
+Back to Me
+
+The rest of this is just me playing around. This post is really just a public draft, a way to test out the like button feature I just built. Nothing too serious, more like a public journal entry.
+
+I’m building a startup, adding features, experimenting, and just seeing where this goes. Looking forward to writing more posts, sharing thoughts, and letting this space grow naturally.
+
+Alright, peace out.
+—AB`
+  },
+  {
     slug: 'so-it-starts-here',
     title: 'So It Starts Here…',
     date: '2025-08-10',
