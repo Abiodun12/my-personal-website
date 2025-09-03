@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 import { blogPosts } from '../../../config/blog'
 import { BlogLikeButton } from '../../../components/BlogLikeButton'
 import ScrollToTop from '../../../components/ScrollToTop'
+import BlogLikeFAB from '../../../components/BlogLikeFAB'
 import type { Metadata } from 'next'
 
 interface BlogPost {
@@ -50,10 +51,15 @@ export default function BlogPost({ params }: Props) {
           />
         </Terminal>
         
-        {/* Add the like button */}
-        <Terminal autoScroll={false}>
-          <BlogLikeButton postSlug={params.slug} />
-        </Terminal>
+        {/* Desktop/tablet inline like button */}
+        <div className="hidden md:block">
+          <Terminal autoScroll={false}>
+            <BlogLikeButton postSlug={params.slug} />
+          </Terminal>
+        </div>
+
+        {/* Mobile floating action button */}
+        <BlogLikeFAB postSlug={params.slug} />
         
         <Terminal autoScroll={false}>
           $ <TerminalLink href="/blog">cd ..</TerminalLink>

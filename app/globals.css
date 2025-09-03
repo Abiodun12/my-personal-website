@@ -46,6 +46,19 @@ body {
   position: relative;
 }
 
+/* Utility classes used by FAB (Tailwind-like shims) */
+.hidden { display: none !important; }
+.fixed { position: fixed !important; }
+.right-4 { right: 1rem !important; }
+.pointer-events-none { pointer-events: none !important; }
+.pointer-events-auto { pointer-events: auto !important; }
+.z-\[10000\] { z-index: 10000 !important; }
+
+@media (min-width: 768px) {
+  .md\:hidden { display: none !important; }
+  .md\:block { display: block !important; }
+}
+
 .terminal-container {
   width: 100vw;
   height: 100vh;
