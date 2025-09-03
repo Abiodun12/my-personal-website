@@ -46,10 +46,10 @@ export function InteractiveTerminal({
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [triggerParticles, setTriggerParticles] = useState(false);
   
-  // Use preferences from context once loaded
-  const [effectsEnabled, setEffectsEnabled] = useState(!isDesktop);
-  const [particlesEnabled, setParticlesEnabled] = useState(!isDesktop);
-  const [performanceMode, setPerformanceMode] = useState(isDesktop);
+  // Use server-safe defaults; sync from preferences in effect below
+  const [effectsEnabled, setEffectsEnabled] = useState(false);
+  const [particlesEnabled, setParticlesEnabled] = useState(false);
+  const [performanceMode, setPerformanceMode] = useState(true);
   
   // Sync state with preferences once loaded
   useEffect(() => {

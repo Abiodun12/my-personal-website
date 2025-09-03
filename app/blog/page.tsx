@@ -20,12 +20,12 @@ export default function BlogPage() {
 
   return (
     <main style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-      <Terminal>
+      <Terminal autoScroll={false}>
         $ ls blog/
         <Cursor />
       </Terminal>
 
-      <Terminal>
+      <Terminal autoScroll={false} maxHeight="none">
         {filteredPosts.map((post, index) => (
           <React.Fragment key={post.slug}>
             <div style={{ marginBottom: '1rem' }}>
@@ -40,7 +40,7 @@ export default function BlogPage() {
         ))}
       </Terminal>
 
-      <Terminal>
+      <Terminal autoScroll={false}>
         $ <TerminalLink href="/">cd ..</TerminalLink>
       </Terminal>
     </main>
