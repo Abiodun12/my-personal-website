@@ -21,6 +21,8 @@ load_dotenv()
 # API credentials
 DASHSCOPE_API_KEY = os.getenv('DASHSCOPE_API_KEY')
 DEEPSEEK_API_KEY = os.getenv('DEEPSEEK_API_KEY')
+SMART_PET_SHARED_SECRET = os.getenv('SMART_PET_SHARED_SECRET', '')
+FLASK_DEBUG_LOGS = os.getenv('FLASK_DEBUG', 'false').lower() == 'true'
 DEEPSEEK_MODEL = "deepseek-chat"
 
 # Set DashScope base URL
@@ -36,9 +38,20 @@ def analyze_image_route():
         return '', 204
 
     try:
-        print("Received request:", request)
-        print("Request headers:", dict(request.headers))
-        print("Request content type:", request.content_type)
+        # Require shared secret when configured (prod hardening)
+        if SMART_PET_SHARED_SECRET:
+            provided = request.headers.get('X-Shared-Secret', '')
+            if provided != SMART_PET_SHARED_SECRET:
+                return jsonify({
+                    "success": False,
+                    "error": "Forbidden",
+                    "result": None
+                }), 403
+
+        if FLASK_DEBUG_LOGS:
+            print("Received request:", request)
+            print("Request headers:", dict(request.headers))
+            print("Request content type:", request.content_type)
         
         if not request.is_json:
             print("ERROR: Request is not JSON")
@@ -51,11 +64,13 @@ def analyze_image_route():
             return response, 400
 
         data = request.get_json()
-        print("Parsed data keys:", list(data.keys()))
+        if FLASK_DEBUG_LOGS:
+            print("Parsed data keys:", list(data.keys()))
         
         if 'image' not in data:
-            print("ERROR: 'image' field not found in request data")
-            print("Available keys:", list(data.keys()))
+            if FLASK_DEBUG_LOGS:
+                print("ERROR: 'image' field not found in request data")
+                print("Available keys:", list(data.keys()))
 
             return jsonify({
                 "success": False,

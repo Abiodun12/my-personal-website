@@ -1,9 +1,20 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@vercel/postgres';
 
 // This endpoint will create the necessary database table
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    // Guard this route in production with a shared secret
+    if (process.env.NODE_ENV === 'production') {
+      const expected = process.env.ADMIN_API_SECRET
+      if (!expected) {
+        return NextResponse.json({ success: false, error: 'Disabled in production' }, { status: 403 })
+      }
+      const provided = req.headers.get('x-admin-secret') || ''
+      if (provided !== expected) {
+        return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 })
+      }
+    }
     // Create user_preferences table if it doesn't exist
     await sql`
       CREATE TABLE IF NOT EXISTS user_preferences (

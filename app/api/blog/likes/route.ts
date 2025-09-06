@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getClientIp, isAllowedOrigin, rateLimit } from '../../../../lib/security';
 import { sql } from '@vercel/postgres';
 import { cookies } from 'next/headers';
 import crypto from 'crypto';
@@ -80,7 +81,21 @@ export async function GET(req: NextRequest) {
 // POST - Toggle like
 export async function POST(req: NextRequest) {
   try {
+    // Origin check
+    if (!isAllowedOrigin(req)) {
+      return NextResponse.json({ error: 'Origin not allowed' }, { status: 403 })
+    }
+    // Limit abuse
+    const ip = getClientIp(req)
+    const rl = rateLimit({ key: `likes:${ip}`, windowMs: 60_000, max: 20 })
+    if (!rl.allowed) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+    }
+
     const { postSlug } = await req.json();
+    if (!postSlug || typeof postSlug !== 'string' || postSlug.length > 255 || !/^[a-z0-9\-_/]+$/i.test(postSlug)) {
+      return NextResponse.json({ error: 'Invalid postSlug' }, { status: 400 })
+    }
     const userId = getUserId(req);
     const username = generateUsername(userId);
 

@@ -3,7 +3,8 @@ import time
 import threading
 import requests
 
-RENDER_URL = "https://my-personal-website-t7tw.onrender.com/health"
+RENDER_BASE = os.environ.get("RENDER_API_URL", "https://my-personal-website-t7tw.onrender.com")
+RENDER_URL = os.environ.get("RENDER_HEALTH_URL", f"{RENDER_BASE.rstrip('/')}/health")
 PING_INTERVAL = 300  # 5 minutes in seconds
 
 def keep_alive_ping():

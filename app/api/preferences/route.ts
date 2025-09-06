@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getClientIp, isAllowedOrigin, rateLimit } from '../../../lib/security';
 import { sql } from '@vercel/postgres';
 import { cookies } from 'next/headers';
 import crypto from 'crypto';
@@ -59,8 +60,31 @@ export async function GET(req: NextRequest) {
 // POST handler to save user preferences
 export async function POST(req: NextRequest) {
   try {
+    // Origin check
+    if (!isAllowedOrigin(req)) {
+      return NextResponse.json({ success: false, error: 'Origin not allowed' }, { status: 403 })
+    }
+    // Rate limit per IP
+    const ip = getClientIp(req)
+    const rl = rateLimit({ key: `prefs:${ip}`, windowMs: 60_000, max: 30 })
+    if (!rl.allowed) {
+      return NextResponse.json({ success: false, error: 'Too many requests' }, { status: 429 })
+    }
     const userId = getUserId(req);
-    const { preferences } = await req.json();
+    const body = await req.json();
+    const preferences = body?.preferences
+    if (
+      !preferences ||
+      typeof preferences !== 'object' ||
+      typeof preferences.performanceMode !== 'boolean' ||
+      typeof preferences.effectsEnabled !== 'boolean' ||
+      typeof preferences.particlesEnabled !== 'boolean'
+    ) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid preferences payload' },
+        { status: 400 }
+      )
+    }
     
     // Save user preferences to database using upsert pattern
     await sql`
