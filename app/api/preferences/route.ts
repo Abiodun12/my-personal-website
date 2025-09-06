@@ -37,9 +37,9 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ 
         success: true, 
         preferences: {
-          performanceMode: true,
-          effectsEnabled: false,
-          particlesEnabled: false
+          performanceMode: false,
+          effectsEnabled: true,
+          particlesEnabled: true
         } 
       });
     }

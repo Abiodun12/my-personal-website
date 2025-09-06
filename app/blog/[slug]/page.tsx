@@ -4,7 +4,6 @@ import { TerminalLink } from '../../../components/TerminalLink'
 import { notFound } from 'next/navigation'
 import { blogPosts } from '../../../config/blog'
 import { BlogLikeButton } from '../../../components/BlogLikeButton'
-import ScrollToTop from '../../../components/ScrollToTop'
 import BlogLikeFAB from '../../../components/BlogLikeFAB'
 import type { Metadata } from 'next'
 
@@ -41,7 +40,6 @@ export default function BlogPost({ params }: Props) {
 
   return (
     <>
-      <ScrollToTop />
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         <Terminal autoScroll={false}>$ cat {post.title}.md</Terminal>
         <Terminal autoScroll={false} maxHeight="none">

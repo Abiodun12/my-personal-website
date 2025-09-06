@@ -1,33 +1,12 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { InteractiveTerminal } from '../components/InteractiveTerminal'
 import { Terminal } from '../components/Terminal'
 import { Cursor } from '../components/Cursor'
 import '../styles/terminal.css'
 
 export default function Home() {
-  const [isDesktop, setIsDesktop] = useState(false)
-  
-  useEffect(() => {
-    const desktop = window.innerWidth >= 1024 || 
-      navigator.userAgent.includes('Windows') || 
-      navigator.userAgent.includes('Mac');
-    setIsDesktop(desktop)
-    
-    if (desktop) {
-      // Load minimal CSS instead
-      const link = document.createElement('link')
-      link.rel = 'stylesheet'
-      link.href = '/desktop-terminal.css' // Simplified CSS for desktop
-      document.head.appendChild(link)
-      
-      // Disable existing animations
-      document.documentElement.style.setProperty('--animation-state', 'paused')
-      document.body.classList.add('ultra-performance')
-    }
-  }, [])
-  
   const initialOutput = (
     <>
       <div className="welcome-message">
@@ -50,8 +29,8 @@ export default function Home() {
   );
   
   return (
-    <main className={isDesktop ? 'desktop-mode' : ''} style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+    <main style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
       <InteractiveTerminal initialOutput={initialOutput} />
     </main>
   )
-} 
+}

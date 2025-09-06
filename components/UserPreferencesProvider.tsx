@@ -15,9 +15,9 @@ interface PreferencesContextType {
 
 // Default preferences
 const defaultPreferences: Preferences = {
-  performanceMode: true,
-  effectsEnabled: false,
-  particlesEnabled: false
+  performanceMode: false,
+  effectsEnabled: true,
+  particlesEnabled: true
 };
 
 // Create context

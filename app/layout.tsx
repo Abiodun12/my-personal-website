@@ -5,8 +5,8 @@ import React from 'react'
 import { Inter } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/react'
 import KeepAliveClient from './KeepAliveClient'
-import { PerformanceManager } from '../components/PerformanceManager'
 import { UserPreferencesProvider } from '../components/UserPreferencesProvider'
+import ScrollToTop from '../components/ScrollToTop'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -25,7 +25,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body suppressHydrationWarning>
         <UserPreferencesProvider>
-          <PerformanceManager />
+          <ScrollToTop />
           <div className="terminal-container">
             <div className="terminal">
               <div className="terminal-content">
