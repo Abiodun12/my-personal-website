@@ -9,13 +9,13 @@ import { siteConfig } from '../../config'
 export default function ProjectsPage() {
   return (
     <main>
-      <Terminal>
+      <Terminal maxHeight="none">
         $ ls /projects
         <Cursor />
       </Terminal>
 
       {siteConfig.projects.map((project, index) => (
-        <Terminal key={index}>
+        <Terminal key={index} autoScroll={false} maxHeight="none">
           <div style={{ marginBottom: '1rem' }}>
             <span style={{ color: project.status === 'live' ? '#00ff00' : '#ffbd2e' }}>
               {project.status === 'live' ? '🟢' : '🟡'}
@@ -38,7 +38,7 @@ export default function ProjectsPage() {
         </Terminal>
       ))}
 
-      <Terminal>
+      <Terminal maxHeight="none">
         $ <TerminalLink href="/">cd ..</TerminalLink>
       </Terminal>
     </main>

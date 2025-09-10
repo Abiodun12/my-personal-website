@@ -51,6 +51,9 @@
 .terminal-content {
   flex: 1;
   padding: clamp(1rem, 3vw, 2rem);
+  /* Respect mobile safe areas so first/last lines aren't obscured */
+  padding-top: calc(clamp(1rem, 3vw, 2rem) + env(safe-area-inset-top));
+  padding-bottom: calc(clamp(1rem, 3vw, 2rem) + env(safe-area-inset-bottom));
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;

@@ -41,7 +41,8 @@ export default function BlogPost({ params }: Props) {
   return (
     <>
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <Terminal autoScroll={false}>$ cat {post.title}.md</Terminal>
+        {/* Compact header command */}
+        <Terminal autoScroll={false} maxHeight="none">$ cat {post.title}.md</Terminal>
         <Terminal autoScroll={false} maxHeight="none">
           <div 
             className="blog-content"
@@ -59,7 +60,8 @@ export default function BlogPost({ params }: Props) {
         {/* Mobile floating action button */}
         <BlogLikeFAB postSlug={params.slug} />
         
-        <Terminal autoScroll={false}>
+        {/* Compact footer nav */}
+        <Terminal autoScroll={false} maxHeight="none">
           $ <TerminalLink href="/blog">cd ..</TerminalLink>
         </Terminal>
       </main>

@@ -7,11 +7,11 @@ import { Cursor } from '../../components/Cursor'
 export default function AboutPage() {
   return (
     <main>
-      <Terminal>
+      <Terminal maxHeight="none">
         $ cat about_me.txt
         <Cursor />
       </Terminal>
-      <Terminal>
+      <Terminal autoScroll={false}>
         <h1>About Me</h1>
         <br />
         Hi, I'm Abiodun (AB) Soneye—a tech enthusiast, lifelong learner, and adventurer navigating the exciting intersections of technology, creativity, and life.
@@ -22,7 +22,7 @@ export default function AboutPage() {
         <br /><br />
         Welcome to my world—I'm glad you're here. Let's build something amazing together.
       </Terminal>
-      <Terminal>
+      <Terminal maxHeight="none">
         $ <TerminalLink href="/">cd ..</TerminalLink>
       </Terminal>
     </main>

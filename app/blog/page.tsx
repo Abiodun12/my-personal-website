@@ -20,7 +20,8 @@ export default function BlogPage() {
 
   return (
     <main style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-      <Terminal autoScroll={false}>
+      {/* Compact header command on mobile/any */}
+      <Terminal autoScroll={false} maxHeight="none">
         $ ls blog/
         <Cursor />
       </Terminal>
@@ -40,7 +41,8 @@ export default function BlogPage() {
         ))}
       </Terminal>
 
-      <Terminal autoScroll={false}>
+      {/* Compact footer nav */}
+      <Terminal autoScroll={false} maxHeight="none">
         $ <TerminalLink href="/">cd ..</TerminalLink>
       </Terminal>
     </main>
