@@ -309,3 +309,8 @@ python smart_pet.py  # Flask server (port 8081)
 ✅ **Responsive**: Mobile-first design  
 
 
+
+
+
+
+
