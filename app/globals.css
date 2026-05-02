@@ -162,6 +162,10 @@ body {
   opacity: 0.6;
 }
 
+.mobile-terminal-nav {
+  display: none;
+}
+
 main {
   height: 100%;
   width: 100%;
@@ -421,6 +425,51 @@ a[target="_blank"].terminal-link:hover {
   
   .terminal-input-line {
     padding: 0.3rem;
+  }
+
+  .mobile-terminal-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    margin: 0 0 0.75rem;
+    padding: 0.45rem 0.5rem;
+    background: rgba(0, 0, 0, 0.86);
+    border: 1px solid rgba(0, 255, 0, 0.22);
+    border-radius: 4px;
+    box-shadow: 0 0 12px rgba(0, 255, 0, 0.12);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .mobile-terminal-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .mobile-terminal-nav-prompt {
+    flex: 0 0 auto;
+    color: var(--text-color);
+    opacity: 0.85;
+    text-shadow: var(--text-glow);
+  }
+
+  .mobile-terminal-nav button {
+    flex: 0 0 auto;
+    min-width: auto;
+    min-height: 38px;
+    padding: 0.35rem 0.55rem;
+    border: 1px solid rgba(0, 255, 0, 0.32);
+    border-radius: 3px;
+    background: rgba(0, 255, 0, 0.06);
+    color: var(--text-color);
+    font: inherit;
+    line-height: 1;
+    text-transform: uppercase;
+    text-shadow: var(--text-glow);
   }
 }
 

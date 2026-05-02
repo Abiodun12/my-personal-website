@@ -29,6 +29,13 @@ export const siteConfig = {
   },
   projects: [
     {
+      name: "Founder of Cuppa",
+      description: "Founder of Cuppa",
+      link: "https://trycuppa.app/",
+      status: "live",
+      tech: ["Startup", "Product"]
+    },
+    {
       name: "Smart Pet Plus",
       description: "AI-powered pet recognition and story generation app",
       link: "/smart-pet-plus",
@@ -41,6 +48,27 @@ export const siteConfig = {
       link: "https://github.com/Abiodun12/my-personal-website",
       status: "live",
       tech: ["Next.js", "TypeScript", "React"]
+    },
+    {
+      name: "Matrix Bot V1 Showcase",
+      description: "Live-tested CLOB execution infrastructure showcase for prediction markets",
+      link: "https://github.com/Abiodun12/matrix-bot-v1-showcase",
+      status: "live",
+      tech: ["Go", "Prediction Markets", "CLOB"]
+    },
+    {
+      name: "Mini Cursor Hackathon - 2nd Place",
+      description: "2nd place project from the Mini Cursor Hackathon",
+      link: "https://github.com/Abiodun12/mini-cursor-hackathon-2nd-place",
+      status: "live",
+      tech: ["HTML"]
+    },
+    {
+      name: "MCDC Benthany House Project",
+      description: "MCDC Project",
+      link: "https://github.com/Abiodun12/MCDC_Benthany_House_Project",
+      status: "live",
+      tech: ["Python"]
     },
     {
       name: "Coming Soon",

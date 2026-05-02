@@ -7,6 +7,7 @@ import { Analytics } from '@vercel/analytics/react'
 import KeepAliveClient from './KeepAliveClient'
 import { UserPreferencesProvider } from '../components/UserPreferencesProvider'
 import ScrollToTop from '../components/ScrollToTop'
+import MobileTerminalNav from '../components/MobileTerminalNav'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -29,6 +30,7 @@ export default function RootLayout({
           <div className="terminal-container">
             <div className="terminal">
               <div className="terminal-content">
+                <MobileTerminalNav />
                 {children}
                 <Analytics />
                 <KeepAliveClient />
