@@ -5,15 +5,8 @@ import { notFound } from 'next/navigation'
 import { blogPosts } from '../../../config/blog'
 import { BlogLikeButton } from '../../../components/BlogLikeButton'
 import BlogLikeFAB from '../../../components/BlogLikeFAB'
+import { formatBlogContent } from '../../../lib/formatBlog'
 import type { Metadata } from 'next'
-
-interface BlogPost {
-  slug: string
-  title: string
-  date: string
-  description: string
-  content: string
-}
 
 type Props = {
   params: {
@@ -24,7 +17,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const post = blogPosts.find(p => p.slug === params.slug)
   return {
-    title: post ? `${post.title} - Life of AB` : 'Blog - Life of AB',
+    title: post ? { absolute: `${post.title} · Life of AB` } : 'Blog',
     description: post?.description || 'Read my latest thoughts and experiences',
   }
 }
@@ -40,13 +33,12 @@ export default function BlogPost({ params }: Props) {
 
   return (
     <>
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-        {/* Compact header command */}
-        <Terminal autoScroll={false} maxHeight="none">$ cat {post.title}.md</Terminal>
+      <main className="blog-post" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <Terminal autoScroll={false} maxHeight="none">cat {post.title}.md</Terminal>
         <Terminal autoScroll={false} maxHeight="none">
-          <div 
+          <div
             className="blog-content"
-            dangerouslySetInnerHTML={{ __html: formatContent(post.content) }} 
+            dangerouslySetInnerHTML={{ __html: formatBlogContent(post.content) }}
           />
         </Terminal>
         
@@ -62,20 +54,10 @@ export default function BlogPost({ params }: Props) {
         
         {/* Compact footer nav */}
         <Terminal autoScroll={false} maxHeight="none">
-          $ <TerminalLink href="/blog">cd ..</TerminalLink>
+          <TerminalLink href="/blog">cd ..</TerminalLink>
         </Terminal>
       </main>
     </>
   )
 }
 
-function formatContent(content: string) {
-  return content
-    .replace(/^# (.*$)/gm, '<h1>$1</h1>')
-    .replace(/^## (.*$)/gm, '<h2>$1</h2>')
-    .replace(/^- (.*$)/gm, '• $1<br>')
-    .replace(/\n\n/g, '<br><br>')
-    .replace(/```(\w+)?\n([\s\S]*?)```/g, (_, lang, code) => 
-      `<pre><code class="${lang}">${code}</code></pre>`
-    )
-} 

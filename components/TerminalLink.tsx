@@ -31,7 +31,7 @@ export function TerminalLink({
       href={href}
       className={`terminal-link ${className}`}
       target={target}
-      rel={rel}
+      rel={rel ?? (target === '_blank' ? 'noopener noreferrer' : undefined)}
       onClick={handleClick}
     >
       {children}

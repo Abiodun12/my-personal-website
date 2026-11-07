@@ -1,5 +1,5 @@
 export const metadata = {
-  title: 'LIFE OF ABIODUN(AB) - About',
+  title: 'About',
   description: 'Learn more about Abiodun(AB) and my journey in tech.',
 }
 

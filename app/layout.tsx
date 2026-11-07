@@ -1,20 +1,31 @@
-// This is a Server Component (no 'use client' directive)
 import './globals.css'
 import '../styles/terminal.css'
-import React from 'react'
-import { Inter } from 'next/font/google'
-import { Analytics } from '@vercel/analytics/react'
-import KeepAliveClient from './KeepAliveClient'
+import type { Metadata, Viewport } from 'next'
 import { UserPreferencesProvider } from '../components/UserPreferencesProvider'
 import ScrollToTop from '../components/ScrollToTop'
-import MobileTerminalNav from '../components/MobileTerminalNav'
+import { Analytics } from '@vercel/analytics/react'
 
-const inter = Inter({ subsets: ['latin'] })
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+  themeColor: '#000000',
+}
 
-// Metadata can only be exported from a Server Component
-export const metadata = {
-  title: 'LIFE OF ABIODUN(AB)',
+export const metadata: Metadata = {
+  title: {
+    default: 'LIFE OF ABIODUN(AB)',
+    template: '%s · Life of AB',
+  },
   description: 'Welcome to my personal website where I share my journey in tech and life.',
+  manifest: '/manifest.json',
+  icons: {
+    icon: [
+      { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: '/icons/apple-touch-icon.png',
+  },
 }
 
 export default function RootLayout({
@@ -25,15 +36,16 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body suppressHydrationWarning>
+        <a className="skip-link" href="#main">Skip to content</a>
         <UserPreferencesProvider>
           <ScrollToTop />
           <div className="terminal-container">
             <div className="terminal">
               <div className="terminal-content">
-                <MobileTerminalNav />
-                {children}
+                <div id="main" tabIndex={-1}>
+                  {children}
+                </div>
                 <Analytics />
-                <KeepAliveClient />
               </div>
             </div>
           </div>
@@ -41,4 +53,4 @@ export default function RootLayout({
       </body>
     </html>
   )
-} 
+}

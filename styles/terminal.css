@@ -733,4 +733,187 @@
   .particle {
     will-change: transform, opacity;
   }
+}
+
+/* Usable on phones, keyboards, and desktops without changing the terminal look. */
+.skip-link {
+  position: absolute;
+  left: 0.75rem;
+  top: -4rem;
+  z-index: 200;
+  padding: 0.6rem 0.9rem;
+  background: #000;
+  color: var(--text-color);
+  border: 1px solid var(--text-color);
+}
+
+.skip-link:focus {
+  top: calc(0.5rem + env(safe-area-inset-top));
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.dim {
+  color: #777;
+}
+
+.terminal-container {
+  height: 100vh;
+  height: 100dvh;
+}
+
+.terminal-content {
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.terminal-output,
+.terminal-output h1,
+.terminal-output h2,
+.terminal-output h3,
+.blog-content,
+.welcome-title {
+  overflow-wrap: break-word;
+}
+
+.welcome-title {
+  font-size: 1em;
+  font-weight: normal;
+}
+
+@media (max-width: 768px) {
+  .welcome-title {
+    font-size: 1.2rem;
+  }
+}
+
+.terminal-help ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.terminal-help li {
+  display: block;
+}
+
+.terminal-link {
+  max-width: 100%;
+  white-space: normal;
+  height: auto;
+}
+
+.terminal-input {
+  min-width: 0;
+  font-size: 16px;
+}
+
+.terminal-input:focus,
+.terminal-input:focus-visible {
+  outline: none;
+}
+
+.terminal-help .command-link {
+  text-shadow: none;
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--text-color);
+  outline-offset: 3px;
+}
+
+#main:focus {
+  outline: none;
+}
+
+button.command-item,
+button.command-menu-close {
+  width: auto;
+  background: transparent;
+  border: none;
+  color: var(--text-color);
+  font: inherit;
+  text-align: left;
+}
+
+button.command-item {
+  width: 100%;
+  min-height: 44px;
+}
+
+button.command-menu-close {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.terminal-contact .terminal-link {
+  min-height: 44px;
+  width: fit-content;
+}
+
+.terminal-input-line {
+  min-height: 44px;
+}
+
+.blog-content a {
+  display: inline;
+  text-decoration: underline;
+}
+
+.blog-content pre {
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: pre-wrap;
+}
+
+.skip-link::after {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .blog-post {
+    padding-bottom: 5.5rem;
+  }
+}
+
+@media (hover: none) {
+  .terminal-link:hover,
+  .project-item:hover,
+  .command-item:hover,
+  .folder:hover,
+  a:hover {
+    transform: none;
+  }
+
+  .blog-entry:hover {
+    padding-left: 0.5rem;
+    background: transparent;
+    border-left-color: transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .terminal,
+  .terminal-container,
+  .terminal-link,
+  .command-menu,
+  .cursor,
+  .cursor::before {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
 } 

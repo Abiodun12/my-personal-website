@@ -1,4 +1,5 @@
 import { blogPosts } from './blog'
+import { SOCIAL_LINKS } from './shared-content'
 
 export const siteConfig = {
   title: "LIFE OF AB",
@@ -6,8 +7,8 @@ export const siteConfig = {
   author: "Abiodun Soneye",
   email: "Soneyebiodun@gmail.com",
   socialLinks: {
-    github: "https://github.com/Abiodun12",
-    linkedin: "https://www.linkedin.com/in/abiodun-ab-soneye-1b7a80290/"
+    github: SOCIAL_LINKS.GITHUB,
+    linkedin: SOCIAL_LINKS.LINKEDIN
   },
   about: {
     name: "Abiodun (AB) Soneye",

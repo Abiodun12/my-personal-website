@@ -1,267 +1,161 @@
 'use client'
-import React, { useState, useRef, useEffect, useCallback } from 'react'
+
+import React, { useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Cursor } from './Cursor'
-import { TerminalLink } from './TerminalLink'
 import { CommandMenu } from './CommandMenu'
 import { ParticleEffects } from './ParticleEffects'
-import { usePreferences } from './UserPreferencesProvider'
+import { SiteCommands } from './SiteCommands'
 
-interface Command {
-  command: string;
-  output: React.ReactNode;
+interface CommandEntry {
+  command: string
+  output: React.ReactNode
 }
 
 interface InteractiveTerminalProps {
-  initialOutput?: React.ReactNode;
-  prompt?: string;
+  initialOutput?: React.ReactNode
+  prompt?: string
 }
 
-type CommandFunction = (args?: string) => React.ReactNode;
-
-interface CommandMap {
-  [key: string]: CommandFunction;
+const ROUTES: Record<string, string> = {
+  about: '/about',
+  projects: '/projects',
+  blog: '/blog',
+  contact: '/contact',
 }
 
-export function InteractiveTerminal({ 
+export function InteractiveTerminal({
   initialOutput,
-  prompt = "$"
+  prompt = '$',
 }: InteractiveTerminalProps) {
-  const { loading } = usePreferences();
-  
-  const [history, setHistory] = useState<Command[]>([]);
-  const [input, setInput] = useState('');
-  const inputRef = useRef<HTMLInputElement>(null);
-  const terminalRef = useRef<HTMLDivElement>(null);
-  const [commandHistory, setCommandHistory] = useState<string[]>([]);
-  const [historyIndex, setHistoryIndex] = useState(-1);
-  const [triggerParticles, setTriggerParticles] = useState(false);
-  
-  // Always-on visuals: force full effects regardless of stored prefs
-  const [effectsEnabled, setEffectsEnabled] = useState(true);
-  const [particlesEnabled, setParticlesEnabled] = useState(true);
-  const [performanceMode, setPerformanceMode] = useState(false);
-  
-  // Ensure full visuals after hydration
+  const router = useRouter()
+  const [history, setHistory] = useState<CommandEntry[]>([])
+  const [input, setInput] = useState('')
+  const inputRef = useRef<HTMLInputElement>(null)
+  const [commandHistory, setCommandHistory] = useState<string[]>([])
+  const [historyIndex, setHistoryIndex] = useState(-1)
+  const [triggerParticles, setTriggerParticles] = useState(false)
+  const [effectsEnabled, setEffectsEnabled] = useState(false)
+
   useEffect(() => {
-    if (!loading) {
-      setEffectsEnabled(true);
-      setParticlesEnabled(true);
-      setPerformanceMode(false);
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const coarse = window.matchMedia('(pointer: coarse)').matches
+    const narrow = window.matchMedia('(max-width: 767px)').matches
+    const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches
+    setEffectsEnabled(!reduce && !coarse && !narrow)
+    if (finePointer && !narrow) {
+      inputRef.current?.focus()
     }
-  }, [loading]);
-  
-  // Preferences persistence is no longer used for performance/effects.
+  }, [])
 
-  const handleNavigation = (path: string) => {
-    window.location.href = path;
-  };
+  const runCommand = (raw: string) => {
+    const cmd = raw.trim()
+    if (!cmd) return
 
-  const commands: CommandMap = {
-    help: () => (
-      <div className="terminal-help">
-        Available Commands:<br/><br/>
-        {'>'}  <span 
-          className="terminal-link"
-          onClick={() => handleNavigation('/about')}
-        >ABOUT</span>    : Learn more about me<br/>
-        {'>'}  <span 
-          className="terminal-link"
-          onClick={() => handleNavigation('/projects')}
-        >PROJECTS</span> : View my portfolio<br/>
-        {'>'}  <span 
-          className="terminal-link"
-          onClick={() => handleNavigation('/blog')}
-        >BLOG</span>     : Read my thoughts<br/>
-        {'>'}  <span 
-          className="terminal-link"
-          onClick={() => {
-            setHistory([]);
-            setInput('');
-          }}
-        >CLEAR</span>    : Clear terminal<br/>
-        {'>'}  <span 
-          className="terminal-link"
-          onClick={() => handleCommand('contact')}
-        >CONTACT</span>  : How to reach me<br/>
-        
-      </div>
-    ),
-    about: () => {
-      window.location.href = '/about';
-      return 'Redirecting to about page...';
-    },
-    projects: () => {
-      window.location.href = '/projects';
-      return 'Redirecting to projects page...';
-    },
-    blog: () => {
-      window.location.href = '/blog';
-      return 'Redirecting to blog page...';
-    },
-    clear: () => {
-      setHistory([]);
-      return null;
-    },
-    
-    contact: () => (
-      <div className="terminal-contact">
-        CONNECT WITH ME:<br/><br/>
-        <TerminalLink href="https://www.linkedin.com/in/abiodun-ab-soneye-1b7a80290/" target="_blank">
-          LINKEDIN
-        </TerminalLink><br/>
-        <TerminalLink href="https://github.com/Abiodun12" target="_blank">
-          GITHUB
-        </TerminalLink><br/>
-        <TerminalLink href="https://docs.google.com/document/d/1tvkrHMGgzBmjeW6RGbQjc3ZxynVO66WsOlEVyJmidy8/edit?usp=sharing" target="_blank">
-          RESUME
-        </TerminalLink><br/>
-        <TerminalLink href="mailto:Soneyebiodun@gmail.com">
-          EMAIL
-        </TerminalLink>
-      </div>
-    ),
-    
-  };
+    const command = cmd.split(/\s+/)[0].toLowerCase()
+    setCommandHistory((prev) => [...prev, cmd])
+    if (effectsEnabled) setTriggerParticles((prev) => !prev)
 
-  const handleCommand = useCallback((cmd: string) => {
-    const parts = cmd.trim().split(' ');
-    const command = parts[0].toLowerCase();
-    const args = parts.slice(1).join(' ');
-    
-    let output: React.ReactNode = '';
-
-    if (cmd.trim()) {
-      setCommandHistory(prev => [...prev, cmd]);
-      
-      if (effectsEnabled) {
-        setTriggerParticles(prev => !prev);
-      }
+    if (command === 'clear') {
+      setHistory([])
+      setInput('')
+      setHistoryIndex(-1)
+      return
     }
 
-    if (command in commands) {
-      const result = commands[command]();
-      output = result !== undefined ? result : `Executed: ${command}`;
-    } else if (cmd.trim()) {
-      output = `Command not found: ${command}. Type 'help' for available commands.`;
+    if (ROUTES[command]) {
+      router.push(ROUTES[command])
+      return
     }
 
-    if (cmd.trim()) {
-      setHistory(prev => [...prev, { command: cmd, output }]);
+    const output = command === 'help'
+      ? <SiteCommands />
+      : `Command not found: ${command}. Type 'help' for available commands.`
+
+    setHistory((prev) => [...prev, { command: cmd, output }])
+    setInput('')
+    setHistoryIndex(-1)
+  }
+
+  useEffect(() => {
+    if (history.length === 0) return
+    inputRef.current?.scrollIntoView({ block: 'nearest' })
+  }, [history])
+
+  const onInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      event.preventDefault()
+      runCommand(input)
+      return
     }
-    setInput('');
-    setHistoryIndex(-1);
-  }, [effectsEnabled, performanceMode, commands]);
+
+    if (event.key === 'ArrowUp') {
+      event.preventDefault()
+      if (commandHistory.length === 0) return
+      const newIndex = historyIndex < 0
+        ? commandHistory.length - 1
+        : Math.max(historyIndex - 1, 0)
+      setHistoryIndex(newIndex)
+      setInput(commandHistory[newIndex])
+      return
+    }
+
+    if (event.key === 'ArrowDown') {
+      event.preventDefault()
+      if (historyIndex < 0) return
+      const newIndex = Math.min(historyIndex + 1, commandHistory.length - 1)
+      setHistoryIndex(newIndex)
+      setInput(commandHistory[newIndex])
+    }
+  }
 
   const menuCommands = [
-    { 
-      key: 'ABOUT', 
-      description: 'Learn more about me', 
-      action: () => handleNavigation('/about')
-    },
-    { 
-      key: 'PROJECTS', 
-      description: 'View my portfolio', 
-      action: () => handleNavigation('/projects')
-    },
-    { 
-      key: 'BLOG', 
-      description: 'Read my thoughts', 
-      action: () => handleNavigation('/blog')
-    },
-    { 
-      key: 'CONTACT', 
-      description: 'How to reach me', 
-      action: () => handleCommand('contact')
-    },
-    { 
-      key: 'CLEAR', 
-      description: 'Clear terminal', 
-      action: () => handleCommand('clear')
-    }
-  ];
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        if (commandHistory.length > 0) {
-          const newIndex = historyIndex < 0 ? commandHistory.length - 1 : Math.max(historyIndex - 1, 0);
-          setHistoryIndex(newIndex);
-          setInput(commandHistory[newIndex]);
-        }
-      } else if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        if (historyIndex >= 0) {
-          const newIndex = Math.min(historyIndex + 1, commandHistory.length - 1);
-          setHistoryIndex(newIndex);
-          setInput(commandHistory[newIndex]);
-        }
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [commandHistory, historyIndex]);
-
-  useEffect(() => {
-    const handleClick = () => inputRef.current?.focus();
-    document.addEventListener('click', handleClick);
-    return () => document.removeEventListener('click', handleClick);
-  }, []);
-
-  useEffect(() => {
-    if (terminalRef.current) {
-      terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
-    }
-  }, [history]);
+    { key: 'ABOUT', description: 'Learn more about me', action: () => router.push('/about') },
+    { key: 'PROJECTS', description: 'View my portfolio', action: () => router.push('/projects') },
+    { key: 'BLOG', description: 'Read my thoughts', action: () => router.push('/blog') },
+    { key: 'CONTACT', description: 'How to reach me', action: () => router.push('/contact') },
+    { key: 'CLEAR', description: 'Clear terminal', action: () => runCommand('clear') },
+  ]
 
   return (
-    <div 
-      className={`interactive-terminal`}
-      ref={terminalRef}
-      onClick={() => inputRef.current?.focus()}
-    >
+    <div className="interactive-terminal">
       <CommandMenu commands={menuCommands} />
-      
-      <ParticleEffects 
-        enabled={effectsEnabled && particlesEnabled} 
-        trigger={triggerParticles} 
-        lowPerformanceMode={false}
+      <ParticleEffects
+        enabled={effectsEnabled}
+        trigger={triggerParticles}
+        lowPerformanceMode={!effectsEnabled}
         maxParticles={15}
       />
-      
+
       {initialOutput && <div className="terminal-initial">{initialOutput}</div>}
-      
-      {history.map((entry, i) => (
-        <div key={i} className="terminal-entry">
+
+      {history.map((entry, index) => (
+        <div key={`${entry.command}-${index}`} className="terminal-entry">
           <div className="terminal-command">
             {prompt} {entry.command}
           </div>
-          {entry.output && (
-            <div className="terminal-response">{entry.output}</div>
-          )}
+          {entry.output && <div className="terminal-response">{entry.output}</div>}
         </div>
       ))}
-      
+
       <div className="terminal-input-line">
-        {prompt}{' '}
+        <label htmlFor="terminal-command" className="sr-only">Terminal command</label>
+        <span aria-hidden="true">{prompt} </span>
         <input
+          id="terminal-command"
           ref={inputRef}
           type="text"
           value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              handleCommand(input);
-            }
-          }}
+          onChange={(event) => setInput(event.target.value)}
+          onKeyDown={onInputKeyDown}
           className="terminal-input"
-          autoFocus
           spellCheck="false"
-          aria-label="Terminal input"
+          autoCapitalize="none"
+          autoCorrect="off"
+          enterKeyHint="go"
         />
         <Cursor animated={effectsEnabled} />
       </div>
     </div>
-  );
-} 
+  )
+}

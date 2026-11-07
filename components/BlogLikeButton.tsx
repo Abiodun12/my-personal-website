@@ -87,7 +87,7 @@ export function BlogLikeButton({ postSlug }: BlogLikeButtonProps) {
       {message && (
         <div style={{ 
           fontSize: '12px', 
-          color: '#888',
+          color: '#b6e3b6',
           fontStyle: 'italic'
         }}>
           {message}

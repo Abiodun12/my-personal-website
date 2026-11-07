@@ -8,7 +8,7 @@ export default function AboutPage() {
   return (
     <main>
       <Terminal maxHeight="none">
-        $ cat about_me.txt
+        cat about_me.txt
         <Cursor />
       </Terminal>
       <Terminal autoScroll={false}>
@@ -23,7 +23,7 @@ export default function AboutPage() {
         Welcome to my world—I'm glad you're here. Let's build something amazing together.
       </Terminal>
       <Terminal maxHeight="none">
-        $ <TerminalLink href="/">cd ..</TerminalLink>
+        <TerminalLink href="/">cd ..</TerminalLink>
       </Terminal>
     </main>
   )

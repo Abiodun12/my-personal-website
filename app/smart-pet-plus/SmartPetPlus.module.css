@@ -3,7 +3,7 @@
   max-width: 800px;
   margin: 0 auto;
   padding: 20px;
-  min-height: 100vh;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   color: #00ff00;
@@ -17,8 +17,9 @@
 
 .header h1 {
   color: #00ff00;
-  font-size: 1.5rem;
+  font-size: clamp(1.2rem, 4vw, 1.5rem);
   margin-bottom: 1rem;
+  overflow-wrap: break-word;
 }
 
 .header p {
@@ -41,6 +42,7 @@
   border-radius: 4px;
   cursor: pointer;
   width: 100%;
+  font-size: 16px;
 }
 
 .submitButton {
@@ -48,9 +50,11 @@
   color: black;
   border: none;
   padding: 0.8rem;
+  min-height: 44px;
   border-radius: 4px;
   cursor: pointer;
   font-weight: bold;
+  font-size: 16px;
   font-family: 'Courier New', monospace;
   transition: opacity 0.2s;
 }

@@ -2,6 +2,8 @@
 
 import React, { useState, useRef } from 'react'
 import styles from './SmartPetPlus.module.css'
+import { TerminalLink } from '../../components/TerminalLink'
+import KeepAliveClient from '../KeepAliveClient'
 
 export default function SmartPetPlus() {
   const [image, setImage] = useState<string | null>(null)
@@ -60,9 +62,11 @@ export default function SmartPetPlus() {
 
   return (
     <div className={styles.container}>
+      <KeepAliveClient />
       <div className={styles.header}>
+        <p>$ <TerminalLink href="/">cd ..</TerminalLink></p>
         <h1>Smart Pet Plus - Universal Image Analyzer</h1>
-        <p>Upload any image - we'll identify what it is and tell you a creative story about it!</p>
+        <p>Upload any image. It will be identified, then given a short story.</p>
       </div>
 
       <form onSubmit={handleSubmit} className={styles.form}>
