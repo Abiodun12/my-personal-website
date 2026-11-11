@@ -556,6 +556,21 @@ body .terminal-output {
   max-height: var(--terminal-max-height, none);
 }
 
+body .projects-page {
+  height: auto;
+  flex: none;
+}
+
+body .projects-page .terminal-output {
+  flex-shrink: 0;
+  max-height: none;
+  overflow: visible;
+}
+
+body .projects-page .terminal-link {
+  vertical-align: middle;
+}
+
 @media (max-width: 767px) {
   body .interactive-terminal,
   body .terminal-output {

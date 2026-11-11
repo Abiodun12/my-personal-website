@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function ProjectsPage() {
   return (
-    <main>
+    <main className="projects-page">
       <Terminal maxHeight="none">
         <h1 className="sr-only">Projects</h1>
         ls /projects
@@ -39,12 +39,10 @@ export default function ProjectsPage() {
               ) : (
                 <TerminalLink href={project.link}>{project.name}</TerminalLink>
               )}
-              <br />
-              <span style={{ marginLeft: '20px' }}>{project.description}</span>
-              <br />
-              <span className="dim" style={{ marginLeft: '20px' }}>
+              <div style={{ paddingLeft: '20px' }}>{project.description}</div>
+              <div className="dim" style={{ paddingLeft: '20px' }}>
                 Tech Stack: {project.tech?.join(', ')}
-              </span>
+              </div>
             </div>
           </Terminal>
         )
