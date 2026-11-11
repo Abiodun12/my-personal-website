@@ -466,11 +466,6 @@ a[target="_blank"].terminal-link:hover {
                 inset 0 0 10px rgba(0, 255, 0, 0.05);
   }
   
-  .terminal {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-  }
-  
   .terminal-link:hover, 
   .command-item:hover, 
   .project-item:hover {
@@ -534,9 +529,20 @@ body .terminal-container {
 
 body .terminal {
   height: min(100%, 800px);
+  background-color: transparent;
+  background-image: radial-gradient(
+    ellipse 70% 80% at 32% 42%,
+    rgba(0, 0, 0, 0.86) 0%,
+    rgba(0, 0, 0, 0.72) 45%,
+    rgba(0, 0, 0, 0.32) 100%
+  );
+  backdrop-filter: blur(1px);
+  -webkit-backdrop-filter: blur(1px);
 }
 
 body .terminal-content {
+  --text-glow: 0 0 1px #000, 0 0 2px #000, 0 0 5px rgba(0, 255, 0, 0.5);
+  text-shadow: 0 0 1px #000, 0 0 2px #000;
   min-height: 0;
   overflow-x: hidden;
   overflow-y: auto;
@@ -592,10 +598,23 @@ body .projects-page .terminal-link {
 
   body .terminal {
     height: 100%;
+    background-image: linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.84) 0%,
+      rgba(0, 0, 0, 0.6) 100%
+    );
   }
 
   body .terminal-content {
     padding: 1rem;
+  }
+}
+
+@media (prefers-contrast: more) {
+  body .terminal {
+    background: #000;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
   }
 }
 
